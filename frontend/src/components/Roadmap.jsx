@@ -127,17 +127,6 @@ const Roadmap = () => {
                         }}
                     >
                         {/* Connector Dot */}
-                        <div style={{
-                            position: 'absolute',
-                            left: '50%',
-                            top: '2rem',
-                            width: '24px',
-                            height: '24px',
-                            backgroundColor: 'var(--color-accent)',
-                            border: 'var(--border-width) solid var(--border-color)',
-                            zIndex: 10,
-                            transform: 'translate(-50%, 0) rotate(45deg)'
-                        }}></div>
 
                         {/* Card */}
                         <div className="pop-card" style={{
