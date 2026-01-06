@@ -1,50 +1,60 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Compass, Map as MapIcon, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Welcome = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-white relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-            </div>
-
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            minHeight: '60vh'
+        }}>
             <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="neo-box p-12 text-center max-w-2xl bg-[#FFD700] border-4 border-black relative z-10"
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.5, ease: "backOut" }}
             >
-                <div className="flex justify-center mb-6">
-                    <Compass size={64} color="black" strokeWidth={2.5} />
-                </div>
-
-                <h1 className="text-6xl font-black mb-4 uppercase tracking-tighter" style={{ textShadow: '4px 4px 0px #fff' }}>
-                    CareerSea
+                <h1 style={{
+                    fontSize: 'clamp(3rem, 8vw, 6rem)',
+                    marginBottom: '1rem',
+                    lineHeight: '0.9',
+                    letterSpacing: '-0.04em'
+                }}>
+                    NAVIGATE<br />
+                    <span style={{
+                        color: 'var(--color-tertiary)',
+                        WebkitTextStroke: '2px var(--color-text)',
+                        textShadow: '4px 4px 0 var(--color-text)'
+                    }}>YOUR</span><br />
+                    FUTURE
                 </h1>
 
-                <p className="text-xl font-bold mb-8 max-w-lg mx-auto leading-relaxed">
-                    Navigate the ocean of possibilities. Answer a few questions, and we'll chart a personalized course to your dream career.
+                <p style={{
+                    maxWidth: '600px',
+                    margin: '0 auto 3rem',
+                    fontSize: '1.25rem',
+                    fontWeight: 500,
+                    color: 'var(--color-text-light)'
+                }}>
+                    AI-powered career roadmaps tailored to your unique journey.
+                    Stop guessing, start sailing using CareerSea.
                 </p>
 
-                <button
+                <motion.button
+                    className="pop-button"
                     onClick={() => navigate('/assessment')}
-                    className="neo-button accent text-2xl flex items-center gap-3 mx-auto"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ fontSize: '1.5rem', padding: '1rem 3rem' }}
                 >
-                    Start Journey <ArrowRight size={28} />
-                </button>
-            </motion.div>
-
-            {/* Decorative Elements */}
-            <motion.div
-                animate={{ y: [0, -20, 0] }}
-                transition={{ repeat: Infinity, duration: 3 }}
-                className="absolute top-20 left-20 hidden md:block"
-            >
-                <MapIcon size={48} className="text-cyan-400" />
+                    Start Your Journey
+                </motion.button>
             </motion.div>
         </div>
     );
