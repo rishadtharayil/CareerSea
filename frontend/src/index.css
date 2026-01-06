@@ -1,0 +1,77 @@
+:root {
+  --color-primary: #FFD700; /* Bright Yellow */
+  --color-secondary: #00FFFF; /* Cyan */
+  --color-accent: #FF69B4; /* Hot Pink */
+  --color-background: #F0F4F8; /* Light Blue-ish White */
+  --color-text: #1a1a1a;
+  --border-width: 3px;
+  --border-color: #000000;
+  --shadow-offset: 4px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.neo-box {
+  background: white;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.neo-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: calc(var(--shadow-offset) + 2px) calc(var(--shadow-offset) + 2px) 0 var(--border-color);
+}
+
+.neo-box:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--border-color);
+}
+
+.neo-button {
+  background: var(--color-primary);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--border-color);
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.neo-button:hover {
+  background: #FFE44D; /* Lighten slightly */
+  transform: translate(-2px, -2px);
+  box-shadow: calc(var(--shadow-offset) + 2px) calc(var(--shadow-offset) + 2px) 0 var(--border-color);
+}
+
+.neo-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--border-color);
+}
+
+.neo-button.secondary {
+  background: var(--color-secondary);
+}
+
+.neo-button.accent {
+  background: var(--color-accent);
+  color: white;
+}
+
+h1, h2, h3 {
+  font-weight: 800;
+  line-height: 1.2;
+}
