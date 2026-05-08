@@ -84,7 +84,7 @@ const Roadmap = () => {
             </div>
 
             {/* Roadmap Visualization */}
-            <div style={{ position: 'relative', padding: '0 1rem' }}>
+            <div className="roadmap-container">
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h2 style={{
                         fontSize: '2rem',
@@ -100,17 +100,7 @@ const Roadmap = () => {
                 </div>
 
                 {/* Central Line */}
-                <div style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '100px',
-                    bottom: '0',
-                    width: '4px',
-                    backgroundColor: 'var(--color-border-color)',
-                    borderLeft: 'var(--border-width) dashed var(--color-border-color)',
-                    transform: 'translateX(-50%)',
-                    zIndex: 0
-                }}></div>
+                <div className="roadmap-line"></div>
 
                 {suggestion.roadmap_steps.map((step, index) => (
                     <motion.div
@@ -119,27 +109,17 @@ const Roadmap = () => {
                         viewport={{ once: true, margin: "-50px" }}
                         transition={{ delay: 0.1, duration: 0.4 }}
                         key={step.id || index}
-                        style={{
-                            display: 'flex',
-                            justifyContent: index % 2 === 0 ? 'flex-end' : 'flex-start',
-                            marginBottom: '4rem',
-                            position: 'relative'
-                        }}
+                        className="roadmap-item"
                     >
-                        {/* Connector Dot */}
-
                         {/* Card */}
-                        <div className="pop-card" style={{
-                            width: 'calc(50% - 3rem)',
-                            position: 'relative',
+                        <div className="pop-card roadmap-card" style={{
                             backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-primary)'
                         }}>
                             {/* Step Number Badge */}
                             <div style={{
                                 position: 'absolute',
                                 top: '-20px',
-                                right: index % 2 === 0 ? 'auto' : '-20px',
-                                left: index % 2 === 0 ? '-20px' : 'auto',
+                                left: '-20px',
                                 width: '40px',
                                 height: '40px',
                                 backgroundColor: 'var(--color-text)',

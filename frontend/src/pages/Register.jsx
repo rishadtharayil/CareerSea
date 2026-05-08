@@ -21,7 +21,7 @@ const Register = () => {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '4rem auto' }} className="pop-card">
+        <div style={{ maxWidth: '400px', margin: 'clamp(1rem, 10vw, 4rem) auto' }} className="pop-card">
             <h1 style={{ marginBottom: '2rem' }}>REGISTER</h1>
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
                 <div>

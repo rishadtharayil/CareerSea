@@ -21,7 +21,7 @@ function App() {
     <div style={{
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: '2rem',
+      padding: 'clamp(1rem, 5vw, 2rem)',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column'

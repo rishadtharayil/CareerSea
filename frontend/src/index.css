@@ -69,6 +69,13 @@ p {
   font-size: 1.125rem;
 }
 
+@media (max-width: 768px) {
+  h1 { font-size: 2.25rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.375rem; }
+  p { font-size: 1rem; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 12px;
@@ -101,6 +108,13 @@ p {
   transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+@media (max-width: 640px) {
+  .pop-card {
+    padding: 1.5rem 1rem;
+    --box-shadow-offset: 3px;
+  }
+}
+
 .pop-card:hover {
   transform: translate(-2px, -2px);
   box-shadow: calc(var(--box-shadow-offset) + 2px) calc(var(--box-shadow-offset) + 2px) 0 var(--border-color);
@@ -129,6 +143,15 @@ button {
   transition: all 0.15s ease-out;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+  .pop-button {
+    font-size: 1rem;
+    padding: 0.625rem 1.5rem;
+    width: 100%;
+    box-shadow: 3px 3px 0 var(--border-color);
+  }
 }
 
 .pop-button:hover {
@@ -166,21 +189,72 @@ button {
   outline: none;
 }
 
-.pop-input:focus {
-  box-shadow: 4px 4px 0 var(--border-color);
-  transform: translate(-1px, -1px);
+/* Roadmap Specific Responsive Classes */
+.roadmap-container {
+  position: relative;
+  padding: 0 1rem;
 }
 
-.pop-input::placeholder {
-  color: #aaa;
-  font-weight: 400;
+.roadmap-line {
+  position: absolute;
+  left: 50%;
+  top: 100px;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--color-text);
+  border-left: var(--border-width) dashed var(--color-text);
+  transform: translateX(-50%);
+  z-index: 0;
 }
 
-.pop-label {
-  display: block;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  letter-spacing: 0.05em;
+.roadmap-item {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.roadmap-item:nth-child(even) {
+  justify-content: flex-start;
+}
+
+.roadmap-card {
+  width: calc(50% - 3rem);
+  position: relative;
+}
+
+/* Questionnaire Responsive Classes */
+.choice-button {
+  padding: 1.25rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 1.125rem;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .choice-button {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.analyzing-title {
+  font-size: 2rem;
+  font-weight: 900;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  padding: 1rem 2rem;
+  box-shadow: var(--box-shadow-offset) var(--box-shadow-offset) 0 var(--border-color);
+}
+
+@media (max-width: 640px) {
+  .analyzing-title {
+    font-size: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    width: 80%;
+  }
 }

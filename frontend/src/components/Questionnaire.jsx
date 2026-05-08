@@ -81,14 +81,7 @@ const Questionnaire = () => {
                 >
                     <Loader size={64} />
                 </motion.div>
-                <h2 style={{
-                    fontSize: '2rem',
-                    fontWeight: 900,
-                    background: 'var(--color-surface)',
-                    border: 'var(--border-width) solid var(--border-color)',
-                    padding: '1rem 2rem',
-                    boxShadow: 'var(--box-shadow-offset) var(--box-shadow-offset) 0 var(--border-color)'
-                }}>
+                <h2 className="analyzing-title">
                     ANALYZING YOUR FUTURE...
                 </h2>
             </div>
@@ -105,10 +98,10 @@ const Questionnaire = () => {
             {/* Progress Bar */}
             <div style={{
                 width: '100%',
-                height: '16px',
+                height: 'clamp(12px, 3vw, 16px)',
                 border: 'var(--border-width) solid var(--border-color)',
                 borderRadius: '100px',
-                marginBottom: '3rem',
+                marginBottom: 'clamp(1.5rem, 5vw, 3rem)',
                 backgroundColor: 'var(--color-surface)',
                 overflow: 'hidden',
                 position: 'relative'
@@ -133,7 +126,7 @@ const Questionnaire = () => {
                 >
                     <div className="pop-card" style={{ marginBottom: '2rem' }}>
                         <h2 style={{
-                            fontSize: '1rem',
+                            fontSize: '0.875rem',
                             fontWeight: 800,
                             color: 'var(--color-text-light)',
                             textTransform: 'uppercase',
@@ -142,7 +135,7 @@ const Questionnaire = () => {
                             Question {currentIndex + 1}/{questions.length}
                         </h2>
                         <h1 style={{
-                            fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+                            fontSize: 'clamp(1.25rem, 5vw, 2.25rem)',
                             marginBottom: '2rem',
                             lineHeight: '1.2'
                         }}>
@@ -155,20 +148,13 @@ const Questionnaire = () => {
                                     <button
                                         key={choice}
                                         onClick={() => setCurrentAnswer(choice)}
+                                        className="choice-button"
                                         style={{
-                                            padding: '1.25rem',
-                                            textAlign: 'left',
-                                            fontWeight: 700,
-                                            fontSize: '1.125rem',
                                             backgroundColor: currentAnswer === choice ? 'var(--color-tertiary)' : 'var(--color-bg)',
-                                            border: 'var(--border-width) solid var(--border-color)',
-                                            borderRadius: 'var(--border-radius)',
                                             boxShadow: currentAnswer === choice
                                                 ? '2px 2px 0 var(--border-color)'
                                                 : '0 0 0 transparent',
                                             transform: currentAnswer === choice ? 'translate(-2px, -2px)' : 'none',
-                                            transition: 'all 0.2s',
-                                            cursor: 'pointer'
                                         }}
                                     >
                                         {choice}
@@ -183,7 +169,7 @@ const Questionnaire = () => {
                                     style={{
                                         minHeight: '180px',
                                         resize: 'vertical',
-                                        fontSize: '1.25rem'
+                                        fontSize: 'clamp(1rem, 4vw, 1.25rem)'
                                     }}
                                 />
                             )}
