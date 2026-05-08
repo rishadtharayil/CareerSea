@@ -44,10 +44,14 @@ const Questionnaire = () => {
     const handleSubmit = async (finalAnswers) => {
         setSubmitting(true);
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-            const res = await axios.post(`${apiBaseUrl}/api/submit/`, { answers: finalAnswers });
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
+            const token = localStorage.getItem('access_token');
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            const res = await axios.post(`${apiBaseUrl}/api/submit/`, { answers: finalAnswers }, { headers });
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
+
             console.error("Submission failed", error);
             alert("Failed to analyze. Please ensure Backend is running and API Key is set.");
             setSubmitting(false);
