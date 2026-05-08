@@ -14,7 +14,8 @@ const Questionnaire = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/questions/')
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+        axios.get(`${apiBaseUrl}/api/questions/`)
             .then(res => {
                 setQuestions(res.data);
                 setLoading(false);
@@ -43,7 +44,8 @@ const Questionnaire = () => {
     const handleSubmit = async (finalAnswers) => {
         setSubmitting(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/submit/', { answers: finalAnswers });
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+            const res = await axios.post(`${apiBaseUrl}/api/submit/`, { answers: finalAnswers });
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
             console.error("Submission failed", error);

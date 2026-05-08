@@ -48,7 +48,7 @@ def get_career_suggestion(answers):
     }
     
     # Using a capable free model or low-cost model
-    model = "xiaomi/mimo-v2-flash:free"
+    model = "google/gemini-2.0-flash-001"
     
     data = {
         "model": model,
