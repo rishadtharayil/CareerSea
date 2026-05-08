@@ -1,15 +1,24 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.throttling import AnonRateThrottle
 from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
 from .serializers import QuestionSerializer, UserResponseSerializer
 from .services import get_career_suggestion
+
+class AssessmentBurstThrottle(AnonRateThrottle):
+    scope = 'assessment_burst'
+
+class AssessmentSustainedThrottle(AnonRateThrottle):
+    scope = 'assessment_sustained'
 
 class QuestionListView(generics.ListAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
 class SubmitAssessmentView(APIView):
+    throttle_classes = [AssessmentBurstThrottle, AssessmentSustainedThrottle]
+
     def post(self, request):
         # We expect a payload like {"answers": {"Question 1": "Answer 1", ...}}
         serializer = UserResponseSerializer(data=request.data)

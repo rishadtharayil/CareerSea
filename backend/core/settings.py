@@ -150,3 +150,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {
+        'assessment_burst': '2/min',
+        'assessment_sustained': '10/day',
+    }
+}
