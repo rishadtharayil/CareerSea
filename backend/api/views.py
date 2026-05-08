@@ -1,6 +1,5 @@
 import logging
-# VERSION: 1.0.2
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,8 +8,11 @@ from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
 from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer
 from .services import get_career_suggestion
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
-print("LOADING API VIEWS...")
+
+# VERSION: 1.0.3 - Explicit get_user_model
+print("--- STARTING CAREERSEA API VIEWS ---")
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -30,7 +32,6 @@ class SubmitAssessmentView(APIView):
     throttle_classes = [AssessmentBurstThrottle, AssessmentSustainedThrottle]
 
     def post(self, request):
-        # We expect a payload like {"answers": {"Question 1": "Answer 1", ...}}
         serializer = UserResponseSerializer(data=request.data)
         if serializer.is_valid():
             answers = serializer.validated_data['answers']
@@ -64,8 +65,6 @@ class SubmitAssessmentView(APIView):
                         order=i+1
                     )
                 
-                # Return full response with suggestions
-                # Re-serialize to include the new suggestions
                 return Response(UserResponseSerializer(user_response).data, status=status.HTTP_201_CREATED)
                 
             except Exception as e:
