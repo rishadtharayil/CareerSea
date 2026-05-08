@@ -1,3 +1,4 @@
+import logging
 from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -6,6 +7,9 @@ from rest_framework.throttling import AnonRateThrottle
 from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
 from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer
 from .services import get_career_suggestion
+
+logger = logging.getLogger(__name__)
+print("LOADING API VIEWS...")
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -64,6 +68,7 @@ class SubmitAssessmentView(APIView):
                 return Response(UserResponseSerializer(user_response).data, status=status.HTTP_201_CREATED)
                 
             except Exception as e:
+                logger.exception("Error in SubmitAssessmentView")
                 return Response({"error": "AI Service Failed: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
