@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.throttling import AnonRateThrottle
 from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
-from .serializers import QuestionSerializer, UserResponseSerializer
+from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer
 from .services import get_career_suggestion
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 class AssessmentBurstThrottle(AnonRateThrottle):
     scope = 'assessment_burst'
@@ -26,9 +30,9 @@ class SubmitAssessmentView(APIView):
             answers = serializer.validated_data['answers']
             
             try:
-                # Call AI Service BEFORE saving to ensure we can get result
-                # Or save first. Saving first is safer for data persistence.
-                user_response = serializer.save()
+                # Link to user if authenticated
+                user = request.user if request.user.is_authenticated else None
+                user_response = serializer.save(user=user)
                 
                 suggestion_data = get_career_suggestion(answers)
                 

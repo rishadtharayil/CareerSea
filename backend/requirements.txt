@@ -6,3 +6,4 @@ gunicorn
 uvicorn
 whitenoise
 psycopg2-binary
+djangorestframework-simplejwt

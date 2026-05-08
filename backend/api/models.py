@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Question(models.Model):
     text = models.CharField(max_length=255)
@@ -12,6 +13,7 @@ class Question(models.Model):
         return self.text
 
 class UserResponse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='responses', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     answers = models.JSONField()  # {question_id: answer_text}
 
