@@ -26,7 +26,7 @@ const AdSense = ({ adSlot, adFormat = 'auto', fullWidthResponsive = true }) => {
                 <div className="flex justify-center">
                     <ins className="adsbygoogle"
                         style={{ display: 'block' }}
-                        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                        data-ad-client="ca-pub-3580244897222084"
                         data-ad-slot={adSlot || "YYYYYYYYYYYY"}
                         data-ad-format={adFormat}
                         data-full-width-responsive={fullWidthResponsive.toString()}
