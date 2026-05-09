@@ -8,14 +8,11 @@ const Roadmap = () => {
     const navigate = useNavigate();
     const data = location.state?.data;
 
-    // Safety check if accessed directly or no data
     if (!data || !data.suggestions || data.suggestions.length === 0) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2rem' }}>
-                <h1 className="pop-card" style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase' }}>
-                    NO MAP FOUND
-                </h1>
-                <button onClick={() => navigate('/')} className="pop-button">Go Home</button>
+            <div className="min-h-[80vh] flex flex-col items-center justify-center gap-12 text-center px-4">
+                <h1 className="pop-card text-3xl font-black uppercase">NO MAP FOUND</h1>
+                <button onClick={() => navigate('/')} className="pop-button text-xl">Return Home</button>
             </div>
         );
     }
@@ -23,35 +20,19 @@ const Roadmap = () => {
     const suggestion = data.suggestions[0];
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '6rem' }}>
+        <div className="max-w-[1000px] mx-auto pb-24 px-4 sm:px-6">
 
             {/* Header Section */}
-            <div style={{ textAlign: 'center', marginBottom: '5rem', paddingTop: '2rem' }}>
+            <div className="text-center mb-20 pt-8">
                 <motion.div
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    style={{
-                        display: 'inline-block',
-                        backgroundColor: 'var(--color-tertiary)',
-                        border: 'var(--border-width) solid var(--border-color)',
-                        padding: '0.5rem 1.5rem',
-                        marginBottom: '1.5rem',
-                        fontWeight: 900,
-                        fontSize: '1.125rem',
-                        transform: 'rotate(-2deg)',
-                        boxShadow: '4px 4px 0 var(--border-color)'
-                    }}
+                    className="inline-block bg-tertiary border-pop border-text px-6 py-2 mb-8 font-black text-lg -rotate-2 shadow-pop"
                 >
                     RECOMMENDED CAREER
                 </motion.div>
 
-                <h1 style={{
-                    fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-                    fontWeight: 900,
-                    marginBottom: '2rem',
-                    textTransform: 'uppercase',
-                    lineHeight: '1'
-                }}>
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-12 uppercase leading-none tracking-tighter">
                     {suggestion.title}
                 </h1>
 
@@ -59,122 +40,85 @@ const Roadmap = () => {
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="pop-card"
-                    style={{
-                        textAlign: 'left',
-                        maxWidth: '800px',
-                        margin: '0 auto',
-                        backgroundColor: 'var(--color-surface)'
-                    }}
+                    className="pop-card text-left max-w-3xl mx-auto"
                 >
-                    <p style={{ fontSize: '1.25rem', fontWeight: 700, lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                    <p className="text-xl sm:text-2xl font-bold leading-relaxed mb-8">
                         {suggestion.description}
                     </p>
-                    <div style={{
-                        backgroundColor: 'var(--color-primary)',
-                        border: 'var(--border-width) solid var(--border-color)',
-                        borderRadius: 'var(--border-radius)',
-                        padding: '1.5rem',
-                        fontWeight: 600
-                    }}>
-                        <span style={{ display: 'block', fontSize: '0.875rem', textTransform: 'uppercase', marginBottom: '0.5rem', opacity: 0.8 }}>Why this fits you:</span>
+                    <div className="bg-primary border-pop border-text rounded-pop p-6 sm:p-8 font-bold text-lg">
+                        <span className="block text-xs uppercase mb-2 tracking-[0.2em] opacity-60">Why this fits you:</span>
                         {suggestion.reasoning}
                     </div>
                 </motion.div>
             </div>
 
             {/* Roadmap Visualization */}
-            <div className="roadmap-container">
-                <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h2 style={{
-                        fontSize: '2rem',
-                        fontWeight: 900,
-                        display: 'inline-block',
-                        backgroundColor: 'var(--color-text)',
-                        color: 'var(--color-bg)',
-                        padding: '0.5rem 1.5rem',
-                        transform: 'rotate(1deg)'
-                    }}>
+            <div className="relative pt-12">
+                <div className="text-center mb-20">
+                    <h2 className="text-2xl sm:text-3xl font-black inline-block bg-text text-bg px-8 py-3 rotate-1 shadow-pop">
                         YOUR ROADMAP
                     </h2>
                 </div>
 
                 {/* Central Line */}
-                <div className="roadmap-line"></div>
+                <div className="absolute left-8 md:left-1/2 top-32 bottom-0 w-1 md:w-2 bg-text border-l-pop border-dashed border-text -translate-x-1/2 z-0 hidden sm:block"></div>
 
-                {suggestion.roadmap_steps.map((step, index) => (
-                    <motion.div
-                        initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ delay: 0.1, duration: 0.4 }}
-                        key={step.id || index}
-                        className="roadmap-item"
-                    >
-                        {/* Card */}
-                        <div className="pop-card roadmap-card" style={{
-                            backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-primary)'
-                        }}>
-                            {/* Step Number Badge */}
-                            <div className="step-badge" style={{
-                                position: 'absolute',
-                                top: '-20px',
-                                left: '-20px',
-                                width: '40px',
-                                height: '40px',
-                                backgroundColor: 'var(--color-text)',
-                                color: 'var(--color-bg)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 900,
-                                borderRadius: '50%',
-                                border: '2px solid var(--color-bg)',
-                                zIndex: 20
-                            }}>
-                                {step.order}
-                            </div>
+                <div className="grid gap-12 md:gap-24 relative z-10">
+                    {suggestion.roadmap_steps.map((step, index) => (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            key={step.id || index}
+                            className={`flex flex-col md:flex-row items-center w-full ${
+                                index % 2 === 0 ? 'md:justify-end' : 'md:justify-start'
+                            }`}
+                        >
+                            <div className={`w-full md:w-[45%] relative group`}>
+                                {/* Step Number Badge */}
+                                <div className={`absolute -top-6 -left-6 w-12 h-12 bg-text text-bg flex items-center justify-center font-black text-xl rounded-full border-4 border-bg z-20 shadow-pop-sm group-hover:scale-110 transition-transform`}>
+                                    {step.order}
+                                </div>
 
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem' }}>{step.title}</h3>
-                            <p style={{ fontWeight: 500, marginBottom: '1rem', fontSize: '1rem' }}>{step.description}</p>
+                                <div className={`pop-card w-full !p-8 ${
+                                    index % 2 === 0 ? 'bg-bg' : 'bg-primary'
+                                }`}>
+                                    <h3 className="text-xl sm:text-2xl font-black uppercase mb-4 leading-tight">{step.title}</h3>
+                                    <p className="font-bold text-text-light mb-6 leading-relaxed">{step.description}</p>
 
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.875rem', fontWeight: 700 }}>
-                                {step.duration && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', backgroundColor: 'var(--color-surface)', border: 'var(--border-width) solid var(--border-color)', padding: '0.25rem 0.75rem', borderRadius: '100px' }}>
-                                        <Clock size={14} /> {step.duration}
+                                    <div className="flex flex-wrap gap-3 font-black text-xs uppercase tracking-wider">
+                                        {step.duration && (
+                                            <div className="flex items-center gap-2 bg-surface border-2 border-text px-4 py-1.5 rounded-full shadow-pop-sm">
+                                                <Clock size={16} /> {step.duration}
+                                            </div>
+                                        )}
+                                        {step.resources && step.resources.length > 0 && (
+                                            <div className="flex items-center gap-2 bg-surface border-2 border-text px-4 py-1.5 rounded-full shadow-pop-sm">
+                                                <BookOpen size={16} /> Resources
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                                {step.resources && step.resources.length > 0 && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', backgroundColor: 'var(--color-surface)', border: 'var(--border-width) solid var(--border-color)', padding: '0.25rem 0.75rem', borderRadius: '100px' }}>
-                                        <BookOpen size={14} /> Resources
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))}
+                </div>
 
                 {/* Finish Line */}
-                <div style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'center', paddingTop: '2rem' }}>
-                    <div style={{
-                        backgroundColor: 'var(--color-secondary)',
-                        border: 'var(--border-width) solid var(--border-color)',
-                        padding: '1rem 2rem',
-                        fontSize: '1.5rem',
-                        fontWeight: 900,
-                        boxShadow: '6px 6px 0 var(--border-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                    }}>
-                        <CheckCircle size={28} /> GOAL ACHIEVED
-                    </div>
+                <div className="relative z-20 flex justify-center mt-24">
+                    <motion.div 
+                        whileInView={{ scale: [1, 1.1, 1] }}
+                        className="bg-secondary border-pop border-text px-8 py-4 sm:text-2xl font-black shadow-pop-hover flex items-center gap-4 uppercase tracking-tighter"
+                    >
+                        <CheckCircle size={32} strokeWidth={3} /> Goal Achieved
+                    </motion.div>
                 </div>
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: '6rem' }}>
-                <button onClick={() => navigate('/')} className="pop-button accent">
-                    <Home size={20} /> Start New Journey
+            <div className="text-center mt-24">
+                <button onClick={() => navigate('/')} className="pop-button accent text-xl gap-4 group">
+                    <Home size={24} className="group-hover:-translate-y-1 transition-transform" /> 
+                    Start New Journey
                 </button>
             </div>
         </div>

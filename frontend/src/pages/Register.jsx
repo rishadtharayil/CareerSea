@@ -21,11 +21,11 @@ const Register = () => {
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: 'clamp(1rem, 10vw, 4rem) auto' }} className="pop-card">
-            <h1 style={{ marginBottom: '2rem' }}>REGISTER</h1>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
+        <div className="pop-card max-w-[400px] mx-auto my-12 sm:my-16">
+            <h1 className="text-4xl mb-8 uppercase">REGISTER</h1>
+            <form onSubmit={handleSubmit} className="grid gap-6">
                 <div>
-                    <label style={{ display: 'block', fontWeight: 800, marginBottom: '0.5rem' }}>USERNAME</label>
+                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">USERNAME</label>
                     <input 
                         type="text" 
                         className="pop-input" 
@@ -35,7 +35,7 @@ const Register = () => {
                     />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontWeight: 800, marginBottom: '0.5rem' }}>EMAIL (OPTIONAL)</label>
+                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">EMAIL (OPTIONAL)</label>
                     <input 
                         type="email" 
                         className="pop-input" 
@@ -44,7 +44,7 @@ const Register = () => {
                     />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontWeight: 800, marginBottom: '0.5rem' }}>PASSWORD</label>
+                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">PASSWORD</label>
                     <input 
                         type="password" 
                         className="pop-input" 
@@ -53,10 +53,10 @@ const Register = () => {
                         required 
                     />
                 </div>
-                <button type="submit" className="pop-button">Create Account</button>
+                <button type="submit" className="pop-button w-full">Create Account</button>
             </form>
-            <p style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                Already have an account? <Link to="/login">Login here</Link>
+            <p className="mt-6 text-center text-base">
+                Already have an account? <Link to="/login" className="font-bold underline decoration-2 underline-offset-4 hover:text-primary transition-colors">Login here</Link>
             </p>
         </div>
     );

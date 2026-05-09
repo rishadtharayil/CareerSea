@@ -18,44 +18,38 @@ function App() {
   };
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: 'clamp(1rem, 5vw, 2rem)',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '3rem'
-      }}>
-        <div style={{ fontWeight: 900, fontSize: '1.5rem', letterSpacing: '-0.05em' }}>
-          CAREER<span style={{ color: 'var(--color-primary)' }}>SEA</span>
+    <div className="max-w-[1200px] mx-auto p-4 sm:p-8 min-h-screen flex flex-col">
+      <header className="flex justify-between items-center mb-12 py-4">
+        <div className="font-black text-2xl tracking-tighter cursor-pointer" onClick={() => window.location.href = '/'}>
+          CAREER<span className="text-primary">SEA</span>
         </div>
         <div>
           {isAuthenticated ? (
-            <button onClick={handleLogout} className="pop-button" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>LOGOUT</button>
+            <button onClick={handleLogout} className="pop-button !px-4 !py-2 text-sm">LOGOUT</button>
           ) : (
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <a href="/login" style={{ fontWeight: 800, textDecoration: 'none', color: 'inherit' }}>LOGIN</a>
-              <a href="/register" style={{ fontWeight: 800, textDecoration: 'none', color: 'inherit' }}>REGISTER</a>
+            <div className="flex gap-6 items-center">
+              <a href="/login" className="font-black uppercase text-sm tracking-widest hover:text-primary transition-colors">LOGIN</a>
+              <a href="/register" className="pop-button !px-4 !py-2 text-sm">REGISTER</a>
             </div>
           )}
         </div>
       </header>
 
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Welcome />} />
-          <Route path="/assessment" element={<Questionnaire />} />
-          <Route path="/roadmap" element={<Roadmap />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </AnimatePresence>
+      <main className="flex-grow flex flex-col">
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Welcome />} />
+            <Route path="/assessment" element={<Questionnaire />} />
+            <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </AnimatePresence>
+      </main>
+      
+      <footer className="mt-20 py-8 border-t-pop border-text text-center font-bold uppercase text-xs tracking-widest opacity-60">
+        &copy; {new Date().getFullYear()} CareerSea - All Rights Reserved
+      </footer>
     </div>
   );
 }

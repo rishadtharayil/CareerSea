@@ -14,7 +14,7 @@ const Questionnaire = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
         axios.get(`${apiBaseUrl}/api/questions/`)
             .then(res => {
                 setQuestions(res.data);
@@ -51,68 +51,48 @@ const Questionnaire = () => {
             const res = await axios.post(`${apiBaseUrl}/api/submit/`, { answers: finalAnswers }, { headers });
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
-
             console.error("Submission failed", error);
-            alert("Failed to analyze. Please ensure Backend is running and API Key is set.");
+            alert("Failed to analyze. Please ensure you are logged in and AI service is available.");
             setSubmitting(false);
         }
     };
 
     if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', fontWeight: 800, fontSize: '1.5rem' }}>
+        <div className="flex justify-center items-center h-[50vh] font-black text-2xl tracking-widest animate-pulse">
             LOADING...
         </div>
     );
 
     if (submitting) {
         return (
-            <div style={{
-                minHeight: '60vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center'
-            }}>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                    style={{ marginBottom: '2rem', color: 'var(--color-primary)' }}
+                    className="mb-8 text-primary"
                 >
-                    <Loader size={64} />
+                    <Loader size={80} strokeWidth={3} />
                 </motion.div>
-                <h2 className="analyzing-title">
+                <h2 className="pop-card text-2xl sm:text-3xl font-black uppercase tracking-tight py-4 px-8">
                     ANALYZING YOUR FUTURE...
                 </h2>
             </div>
         );
     }
 
-    if (questions.length === 0) return <div>No questions found.</div>;
+    if (questions.length === 0) return <div className="text-center font-bold p-20">No questions found.</div>;
 
     const question = questions[currentIndex];
     const progress = ((currentIndex) / questions.length) * 100;
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <div className="max-w-[800px] mx-auto w-full px-4 py-8">
             {/* Progress Bar */}
-            <div style={{
-                width: '100%',
-                height: 'clamp(12px, 3vw, 16px)',
-                border: 'var(--border-width) solid var(--border-color)',
-                borderRadius: '100px',
-                marginBottom: 'clamp(1.5rem, 5vw, 3rem)',
-                backgroundColor: 'var(--color-surface)',
-                overflow: 'hidden',
-                position: 'relative'
-            }}>
+            <div className="w-full h-4 border-pop border-text rounded-full mb-12 bg-surface overflow-hidden relative">
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
-                    style={{
-                        height: '100%',
-                        backgroundColor: 'var(--color-secondary)'
-                    }}
+                    className="h-full bg-secondary"
                 />
             </div>
 
@@ -124,38 +104,25 @@ const Questionnaire = () => {
                     exit={{ x: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <div className="pop-card" style={{ marginBottom: '2rem' }}>
-                        <h2 style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 800,
-                            color: 'var(--color-text-light)',
-                            textTransform: 'uppercase',
-                            marginBottom: '1rem'
-                        }}>
-                            Question {currentIndex + 1}/{questions.length}
+                    <div className="pop-card mb-8">
+                        <h2 className="text-sm font-black text-text-light uppercase mb-4 tracking-widest">
+                            Step {currentIndex + 1} of {questions.length}
                         </h2>
-                        <h1 style={{
-                            fontSize: 'clamp(1.25rem, 5vw, 2.25rem)',
-                            marginBottom: '2rem',
-                            lineHeight: '1.2'
-                        }}>
+                        <h1 className="text-2xl sm:text-4xl mb-10 leading-tight">
                             {question.text}
                         </h1>
 
-                        <div style={{ display: 'grid', gap: '1rem' }}>
+                        <div className="grid gap-4">
                             {question.choices && question.choices.length > 0 ? (
                                 question.choices.map((choice) => (
                                     <button
                                         key={choice}
                                         onClick={() => setCurrentAnswer(choice)}
-                                        className="choice-button"
-                                        style={{
-                                            backgroundColor: currentAnswer === choice ? 'var(--color-tertiary)' : 'var(--color-bg)',
-                                            boxShadow: currentAnswer === choice
-                                                ? '2px 2px 0 var(--border-color)'
-                                                : '0 0 0 transparent',
-                                            transform: currentAnswer === choice ? 'translate(-2px, -2px)' : 'none',
-                                        }}
+                                        className={`w-full text-left p-6 font-bold text-lg border-pop border-text rounded-pop transition-all ${
+                                            currentAnswer === choice 
+                                            ? 'bg-tertiary shadow-pop -translate-x-[2px] -translate-y-[2px]' 
+                                            : 'bg-bg hover:bg-surface'
+                                        }`}
                                     >
                                         {choice}
                                     </button>
@@ -165,28 +132,19 @@ const Questionnaire = () => {
                                     value={currentAnswer}
                                     onChange={(e) => setCurrentAnswer(e.target.value)}
                                     placeholder="Type your answer here..."
-                                    className="pop-input"
-                                    style={{
-                                        minHeight: '180px',
-                                        resize: 'vertical',
-                                        fontSize: 'clamp(1rem, 4vw, 1.25rem)'
-                                    }}
+                                    className="pop-input min-h-[200px] text-xl resize-none"
                                 />
                             )}
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <div className="flex justify-end">
                         <button
                             onClick={handleNext}
                             disabled={!currentAnswer}
-                            className="pop-button"
-                            style={{
-                                opacity: !currentAnswer ? 0.5 : 1,
-                                cursor: !currentAnswer ? 'not-allowed' : 'pointer'
-                            }}
+                            className={`pop-button px-12 ${!currentAnswer ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
                         >
-                            {currentIndex === questions.length - 1 ? 'Finish' : 'Next'}
+                            {currentIndex === questions.length - 1 ? 'Finish' : 'Next Step'}
                         </button>
                     </div>
                 </motion.div>
