@@ -1,64 +1,107 @@
-# CareerSea
+# 🌊 CareerSea | AI Career Navigator
 
-Career guidance application with Django backend and React frontend.
+**Stop guessing, start sailing.** CareerSea is a professional-grade, AI-powered career guidance platform that generates hyper-personalized roadmaps based on your unique interests, values, and problem-solving style.
 
-## Structure
+🔗 **Live Demo:** [https://careersea.in](https://careersea.in)
 
-- `backend/`: Django API for career data and roadmap generation.
-- `frontend/`: React/Vite UI for user interaction.
+---
 
-## Setup
+## ✨ Features
 
-### Backend
+- **🧠 AI-Powered Analysis:** Uses Gemini models via OpenRouter to generate deep-dive career suggestions and actionable roadmaps.
+- **🔐 Secure Authentication:** Full User System with JWT-based login and registration.
+- **🚀 Cloud-Native Architecture:** Fully containerized and deployed on Google Cloud Platform using Serverless technology.
+- **📱 Responsive Design:** Modern "Neubrutalist" aesthetic, meticulously polished for Mobile, Tablet, and Desktop users.
+- **🛡️ Production Hardened:** 
+  - Automated CI/CD pipeline via GitHub Actions.
+  - Secrets encrypted in Google Cloud Secret Manager.
+  - Persistent managed PostgreSQL database (Cloud SQL).
+  - Rate limiting to protect AI budget.
+  - Forced HTTPS and HSTS security headers.
 
-1. Navigate to the `backend/` directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # Windows
-   ..\venv\Scripts\activate
-   # Linux/Mac
-   source ../venv/bin/activate
-   ```
-   *(Note: The `venv` is expected to be in the project root based on the current structure, adjust if necessary)*
+---
 
-3. Install dependencies:
-   ```bash
-   pip install django djangorestframework django-cors-headers
-   # Add other dependencies as needed
-   ```
-
-4. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
-
-5. Start the server:
-   ```bash
-   python manage.py runserver
-   ```
+## 🛠️ Tech Stack
 
 ### Frontend
+- **Framework:** React 19 (Vite)
+- **Styling:** Tailwind CSS (Modern Utility-First)
+- **Animations:** Framer Motion
+- **Icons:** Lucide-React
+- **Routing:** React Router 7
 
-1. Navigate to the `frontend/` directory:
-   ```bash
-   cd frontend
-   ```
+### Backend
+- **Framework:** Django 6.0
+- **API:** Django REST Framework
+- **Auth:** Simple JWT
+- **Database:** PostgreSQL (Production) / SQLite (Dev)
+- **AI:** OpenRouter API (Gemini/Llama Models)
+- **Static Files:** WhiteNoise
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### Infrastructure
+- **Platform:** Google Cloud (GCP)
+- **Compute:** Cloud Run (Serverless Containers)
+- **Storage:** Cloud SQL & Artifact Registry
+- **Security:** Secret Manager & Workload Identity Federation
+- **CI/CD:** GitHub Actions
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+---
 
-## Features
+## 🏗️ Project Structure
 
-- Career Roadmap Generation
-- Questionnaire for personalized suggestions
+```text
+├── .github/workflows/  # Automated deployment pipelines
+├── backend/            # Django API Service
+│   ├── api/            # App logic, models, and views
+│   ├── core/           # Project configuration
+│   └── Dockerfile      # Production container config
+├── frontend/           # React Web Application
+│   ├── src/            # Components, pages, and hooks
+│   └── Dockerfile      # Multi-stage production build
+└── README.md
+```
+
+---
+
+## 🚀 Local Development
+
+### 1. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# .\venv\Scripts\activate  # Windows
+
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+*Note: Ensure you have an `.env` file with `OPENROUTER_API_KEY`.*
+
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🚢 Deployment
+
+This project is configured for **Zero-Touch Deployment**. 
+
+Any push to the `main` branch triggers a GitHub Action that:
+1. Authenticates with GCP via Workload Identity Federation (Keyless).
+2. Builds optimized Docker containers for both services.
+3. Deploys them to Cloud Run.
+4. Handles database migrations and static file collection automatically.
+
+---
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+*Created with ❤️ by Rishad Tharayil*
