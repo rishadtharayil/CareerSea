@@ -18,6 +18,14 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+class UserHistoryView(generics.ListAPIView):
+    serializer_class = UserResponseSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return UserResponse.objects.filter(user=self.request.user).order_by('-created_at')
+        return UserResponse.objects.none()
+
 class AssessmentBurstThrottle(AnonRateThrottle):
     scope = 'assessment_burst'
 

@@ -6,6 +6,7 @@ import Questionnaire from './components/Questionnaire';
 import Roadmap from './components/Roadmap';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   const location = useLocation();
@@ -25,7 +26,10 @@ function App() {
         </div>
         <div>
           {isAuthenticated ? (
-            <button onClick={handleLogout} className="pop-button !px-4 !py-2 text-sm">LOGOUT</button>
+            <div className="flex gap-4 items-center">
+              <a href="/dashboard" className="font-black uppercase text-sm tracking-widest hover:text-primary transition-colors">DASHBOARD</a>
+              <button onClick={handleLogout} className="pop-button !px-4 !py-2 text-sm">LOGOUT</button>
+            </div>
           ) : (
             <div className="flex gap-6 items-center">
               <a href="/login" className="font-black uppercase text-sm tracking-widest hover:text-primary transition-colors">LOGIN</a>
@@ -43,6 +47,7 @@ function App() {
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </AnimatePresence>
       </main>
