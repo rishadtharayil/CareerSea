@@ -86,15 +86,27 @@ const Roadmap = () => {
                                     <h3 className="text-xl sm:text-2xl font-black uppercase mb-4 leading-tight">{step.title}</h3>
                                     <p className="font-bold text-text-light mb-6 leading-relaxed">{step.description}</p>
 
-                                    <div className="flex flex-wrap gap-3 font-black text-xs uppercase tracking-wider">
-                                        {step.duration && (
-                                            <div className="flex items-center gap-2 bg-surface border-2 border-text px-4 py-1.5 rounded-full shadow-pop-sm">
-                                                <Clock size={16} /> {step.duration}
-                                            </div>
-                                        )}
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex flex-wrap gap-3 font-black text-xs uppercase tracking-wider">
+                                            {step.duration && (
+                                                <div className="flex items-center gap-2 bg-surface border-2 border-text px-4 py-1.5 rounded-full shadow-pop-sm">
+                                                    <Clock size={16} /> {step.duration}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         {step.resources && step.resources.length > 0 && (
-                                            <div className="flex items-center gap-2 bg-surface border-2 border-text px-4 py-1.5 rounded-full shadow-pop-sm">
-                                                <BookOpen size={16} /> Resources
+                                            <div className="mt-2">
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-50 flex items-center gap-2">
+                                                    <BookOpen size={12} /> Key Resources
+                                                </h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {step.resources.map((res, i) => (
+                                                        <div key={i} className="bg-surface border-2 border-text px-3 py-1 rounded-md text-[11px] font-bold shadow-pop-sm">
+                                                            {res}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

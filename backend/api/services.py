@@ -34,10 +34,16 @@ def get_career_suggestion(answers):
                 "title": "Detailed Step Title",
                 "description": "Actionable instructions and details.",
                 "duration": "e.g., 1 month",
-                "resources": ["Resource Name or URL"]
+                "resources": [
+                    "Free Code Camp - Responsive Web Design",
+                    "Official Python Documentation",
+                    "Udemy - Complete React Bootcamp"
+                ]
             }}
         ]
     }}
+
+    IMPORTANT: For "resources", provide at least 2-3 specific, real-world learning resources, documentation links, or course names. Do not use generic placeholders.
     """
     
     headers = {
