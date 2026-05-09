@@ -116,7 +116,7 @@ const Roadmap = () => {
                             backgroundColor: index % 2 === 0 ? 'var(--color-bg)' : 'var(--color-primary)'
                         }}>
                             {/* Step Number Badge */}
-                            <div style={{
+                            <div className="step-badge" style={{
                                 position: 'absolute',
                                 top: '-20px',
                                 left: '-20px',

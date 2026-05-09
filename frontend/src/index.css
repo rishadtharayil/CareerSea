@@ -239,6 +239,10 @@ button {
     width: 100% !important;
     max-width: none;
   }
+
+  .roadmap-card .step-badge {
+    left: -2.85rem !important; /* Centers 40px badge on 1.5rem line with 3.5rem padding */
+  }
 }
 
 /* Questionnaire Responsive Classes */
