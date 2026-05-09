@@ -27,8 +27,8 @@ const Welcome = () => {
                 </h1>
 
                 <p className="max-w-[550px] mx-auto mb-12 text-xl sm:text-2xl font-bold text-text-light leading-snug">
-                    Get an AI-powered career roadmap that doesn't suck. 
-                    <span className="text-text block mt-2 underline decoration-accent decoration-4 underline-offset-4">Stop guessing, start sailing.</span>
+                    Stop navigating your career with a broken compass. 
+                    <span className="text-text block mt-2 underline decoration-accent decoration-4 underline-offset-4">Get a custom-built blueprint for the journey you actually want.</span>
                 </p>
 
                 <motion.button
