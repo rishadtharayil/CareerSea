@@ -223,6 +223,24 @@ button {
   position: relative;
 }
 
+@media (max-width: 768px) {
+  .roadmap-line {
+    left: 1.5rem;
+    transform: none;
+  }
+
+  .roadmap-item, .roadmap-item:nth-child(even) {
+    justify-content: flex-start;
+    padding-left: 3.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .roadmap-card {
+    width: 100% !important;
+    max-width: none;
+  }
+}
+
 /* Questionnaire Responsive Classes */
 .choice-button {
   padding: 1.25rem;
