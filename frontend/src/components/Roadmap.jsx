@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, BookOpen, Home, CheckCircle } from 'lucide-react';
+import AdSense from './AdSense';
 
 const Roadmap = () => {
     const location = useLocation();
@@ -125,6 +126,11 @@ const Roadmap = () => {
                         <CheckCircle size={32} strokeWidth={3} /> Goal Achieved
                     </motion.div>
                 </div>
+            </div>
+
+            {/* AdSense Monetization */}
+            <div className="max-w-2xl mx-auto px-4 mt-12">
+                <AdSense adSlot="1234567890" />
             </div>
 
             <div className="text-center mt-24">
