@@ -26,6 +26,11 @@ const Dashboard = () => {
                 setLoading(false);
             } catch (error) {
                 console.error("Failed to fetch history", error);
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    navigate('/login');
+                }
                 setLoading(false);
             }
         };

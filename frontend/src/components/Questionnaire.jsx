@@ -52,7 +52,14 @@ const Questionnaire = () => {
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
             console.error("Submission failed", error);
-            alert("Failed to analyze. Please ensure you are logged in and AI service is available.");
+            if (error.response?.status === 401) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                alert("Your session has expired. Please log in again.");
+                navigate('/login');
+            } else {
+                alert("Failed to analyze. Please ensure AI service is available and try again.");
+            }
             setSubmitting(false);
         }
     };
