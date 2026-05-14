@@ -104,17 +104,21 @@ DATABASES = {
 }
 
 if os.environ.get('DB_NAME'):
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', '/cloudsql/' + os.environ.get('INSTANCE_CONNECTION_NAME', '')),
-        'PORT': os.environ.get('DB_PORT', '5432'),
-        'OPTIONS': {
-            'sslmode': 'require',
-        }
-    }
+    db_user = os.environ.get('DB_USER')
+    db_pass = os.environ.get('DB_PASSWORD')
+    db_host = os.environ.get('DB_HOST')
+    db_port = os.environ.get('DB_PORT', '5432')
+    db_name = os.environ.get('DB_NAME')
+    
+    # Construct connection string for better compatibility
+    DATABASE_URL = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+    
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 
 # Password validation

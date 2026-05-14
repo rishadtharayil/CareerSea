@@ -7,3 +7,4 @@ uvicorn
 whitenoise
 psycopg2-binary
 djangorestframework-simplejwt
+dj-database-url
