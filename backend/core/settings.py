@@ -110,8 +110,11 @@ if os.environ.get('DB_NAME'):
     db_port = os.environ.get('DB_PORT', '5432')
     db_name = os.environ.get('DB_NAME')
     
+    from urllib.parse import quote_plus
+    db_pass_encoded = quote_plus(db_pass)
+    
     # Construct connection string for better compatibility
-    DATABASE_URL = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+    DATABASE_URL = f"postgresql://{db_user}:{db_pass_encoded}@{db_host}:{db_port}/{db_name}"
     
     import dj_database_url
     DATABASES['default'] = dj_database_url.config(
