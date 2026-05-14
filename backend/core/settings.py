@@ -111,6 +111,9 @@ if os.environ.get('DB_NAME'):
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', '/cloudsql/' + os.environ.get('INSTANCE_CONNECTION_NAME', '')),
         'PORT': os.environ.get('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require',
+        }
     }
 
 

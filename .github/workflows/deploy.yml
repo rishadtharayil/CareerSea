@@ -33,8 +33,8 @@ jobs:
             --source . \
             --region us-central1 \
             --set-secrets="DJANGO_SECRET_KEY=DJANGO_SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "DB_NAME=career_sea,DB_USER=career_user,INSTANCE_CONNECTION_NAME=project-bbccc83a-4d06-4b06-b85:us-central1:career-sea-db,DEBUG=False" \
-            --add-cloudsql-instances project-bbccc83a-4d06-4b06-b85:us-central1:career-sea-db \
+            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False" \
+            --clear-cloudsql-instances \
             --allow-unauthenticated \
             --quiet
 
