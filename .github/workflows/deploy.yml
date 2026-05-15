@@ -33,7 +33,7 @@ jobs:
             --source . \
             --region us-central1 \
             --set-secrets="DJANGO_SECRET_KEY=DJANGO_SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "DB_NAME=postgres,DB_USER=postgres.qhrmenvunfcykvmpyshb,DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com,DB_PORT=6543,DEBUG=False" \
+            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False" \
             --clear-cloudsql-instances \
             --allow-unauthenticated \
             --quiet
