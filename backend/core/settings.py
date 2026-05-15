@@ -103,34 +103,26 @@ DATABASES = {
     }
 }
 
-import dj_database_url
-
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=600,
-        ssl_require=True
-    )
-elif os.environ.get('DB_NAME'):
+if os.environ.get('DB_NAME'):
     db_user = os.environ.get('DB_USER')
     db_pass = os.environ.get('DB_PASSWORD', '')
     db_host = os.environ.get('DB_HOST')
     db_port = os.environ.get('DB_PORT', '5432')
     db_name = os.environ.get('DB_NAME')
     
-    from urllib.parse import quote_plus
-    db_pass_encoded = quote_plus(db_pass)
-    
-    # Construct connection string for better compatibility
-    DATABASE_URL_CONSTRUCTED = f"postgresql://{db_user}:{db_pass_encoded}@{db_host}:{db_port}/{db_name}"
-    
-    DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL_CONSTRUCTED,
-        conn_max_age=600,
-        ssl_require=True
-    )
+    print(f"CONNECTING TO DB AS USER: {db_user}")
+
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': db_name,
+        'USER': db_user,
+        'PASSWORD': db_pass,
+        'HOST': db_host,
+        'PORT': db_port,
+        'OPTIONS': {
+            'sslmode': 'require',
+        }
+    }
 
 
 # Password validation
