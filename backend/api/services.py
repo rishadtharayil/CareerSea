@@ -54,7 +54,7 @@ def get_career_suggestion(answers):
     }
     
     # Using a capable free model or low-cost model
-    model = "google/gemini-2.0-flash-001"
+    model = "moonshotai/kimi-k2.6:free"
     
     data = {
         "model": model,
