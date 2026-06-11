@@ -34,8 +34,11 @@ You are a career counselor. Based on the following user responses, suggest THREE
 2. "adjacent" (a pivot leveraging their transferable skills)
 3. "wildcard" (a bold, unexpected path based on their implicit traits)
 
-For each path, provide a very detailed, step-by-step roadmap to achieve it.
-CRITICAL INSTRUCTION: Analyze their current background (education, current job) and SKIP roadmap steps they have already mastered. Tailor the guide strictly to their current level.
+For each path, provide a highly detailed, step-by-step roadmap to achieve it.
+CRITICAL INSTRUCTION 1: Analyze their current background (education, current job) and SKIP roadmap steps they have already mastered. Tailor the guide strictly to their current level.
+CRITICAL INSTRUCTION 2: Each roadmap must consist of at least 4-5 progressive milestones/steps. Do not truncate the roadmap to just 1 or 2 steps; even if they have some prior knowledge, map out a thorough journey from where they are today to professional mastery and job readiness.
+CRITICAL INSTRUCTION 3: Each step's description must be extremely detailed, concrete, and rich (at least 3-5 sentences long). Provide specific sub-tasks, methodologies, tools/libraries to learn, and concrete projects they should build to prove their competence.
+CRITICAL INSTRUCTION 4: For each step, provide 3-4 highly specific, real-world learning resources, official documentation links, books, or online courses. Avoid general descriptions like "tutorials" or "online resources".
 
 User Responses:
 {json.dumps(answers, indent=2)}
@@ -52,8 +55,8 @@ Return the output in the following STRICT JSON format (no markdown, no other tex
         "roadmap": [
             {{
                 "title": "Detailed Step Title",
-                "description": "Actionable instructions and details.",
-                "duration": "e.g., 1 month",
+                "description": "Detailed actionable instructions, concrete sub-tasks, libraries/methods, and projects to build.",
+                "duration": "e.g., 2 months",
                 "resources": [
                     "Free Code Camp - Responsive Web Design",
                     "Official Python Documentation",
@@ -71,8 +74,6 @@ Return the output in the following STRICT JSON format (no markdown, no other tex
         ...
     }}
 ]
-
-IMPORTANT: For "resources", provide at least 2-3 specific, real-world learning resources, documentation links, or course names. Do not use generic placeholders.
 """.strip()
 
 
