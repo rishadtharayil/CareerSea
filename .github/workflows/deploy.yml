@@ -26,16 +26,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Grant the Cloud Run compute identity permission to call Vertex AI.
-      # This is idempotent — safe to run on every deploy.
-      - name: Grant Vertex AI access to Cloud Run identity
-        run: |
-          gcloud projects add-iam-policy-binding project-bbccc83a-4d06-4b06-b85 \
-            --member="serviceAccount:1035335423870-compute@developer.gserviceaccount.com" \
-            --role="roles/aiplatform.user" \
-            --condition=None \
-            --quiet
-
       - name: Deploy Backend
         run: |
           cd backend
