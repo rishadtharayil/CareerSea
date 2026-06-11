@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader } from 'lucide-react';
@@ -14,8 +14,7 @@ const Questionnaire = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
-        axios.get(`${apiBaseUrl}/api/questions/`)
+        api.get('/api/questions/')
             .then(res => {
                 setQuestions(res.data);
                 setLoading(false);
@@ -44,22 +43,12 @@ const Questionnaire = () => {
     const handleSubmit = async (finalAnswers) => {
         setSubmitting(true);
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
-            const token = localStorage.getItem('access_token');
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-            const res = await axios.post(`${apiBaseUrl}/api/submit/`, { answers: finalAnswers }, { headers });
+            const res = await api.post('/api/submit/', { answers: finalAnswers });
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
             console.error("Submission failed", error);
-            if (error.response?.status === 401) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                alert("Your session has expired. Please log in again.");
-                navigate('/login');
-            } else {
-                alert("Failed to analyze. Please ensure AI service is available and try again.");
-            }
+            // 401 handling is done by the api interceptor
+            alert("Failed to analyze. Please ensure the AI service is available and try again.");
             setSubmitting(false);
         }
     };

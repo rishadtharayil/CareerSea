@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronRight, History, Ship } from 'lucide-react';
@@ -12,25 +12,12 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
-                const token = localStorage.getItem('access_token');
-                if (!token) {
-                    navigate('/login');
-                    return;
-                }
-
-                const res = await axios.get(`${apiBaseUrl}/api/history/`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get('/api/history/');
                 setHistory(res.data);
-                setLoading(false);
             } catch (error) {
                 console.error("Failed to fetch history", error);
-                if (error.response?.status === 401) {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    navigate('/login');
-                }
+                // 401 handling (redirect to /login) is done by the api interceptor
+            } finally {
                 setLoading(false);
             }
         };

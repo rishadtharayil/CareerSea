@@ -15,9 +15,11 @@
 - **🛡️ Production Hardened:** 
   - Automated CI/CD pipeline via GitHub Actions.
   - Secrets encrypted in Google Cloud Secret Manager.
-  - Persistent managed PostgreSQL database (Cloud SQL).
-  - Rate limiting to protect AI budget.
+  - Persistent managed PostgreSQL database (Supabase).
+  - Rate limiting to protect AI budget (2/min burst, 10/day per user).
   - Forced HTTPS and HSTS security headers.
+  - Explicit per-view permission classes on all API endpoints.
+  - Automatic JWT access-token refresh with queued retry on expiry.
 
 ---
 
@@ -35,13 +37,14 @@
 - **API:** Django REST Framework
 - **Auth:** Simple JWT
 - **Database:** PostgreSQL (Production) / SQLite (Dev)
-- **AI:** OpenRouter API (Gemini/Llama Models)
+- **AI (Primary):** Google Vertex AI — Gemini 2.0 Flash via `google-cloud-aiplatform` SDK
+- **AI (Fallback):** OpenRouter API — toggle with `AI_PROVIDER=openrouter` env var
 - **Static Files:** WhiteNoise
 
 ### Infrastructure
 - **Platform:** Google Cloud (GCP)
 - **Compute:** Cloud Run (Serverless Containers)
-- **Storage:** Cloud SQL & Artifact Registry
+- **Storage:** Supabase PostgreSQL & Artifact Registry
 - **Security:** Secret Manager & Workload Identity Federation
 - **CI/CD:** GitHub Actions
 
@@ -56,7 +59,10 @@
 │   ├── core/           # Project configuration
 │   └── Dockerfile      # Production container config
 ├── frontend/           # React Web Application
-│   ├── src/            # Components, pages, and hooks
+│   ├── src/
+│   │   ├── api.js      # Centralized axios client w/ JWT refresh interceptor
+│   │   ├── components/ # Reusable UI components
+│   │   └── pages/      # Route-level page components
 │   └── Dockerfile      # Multi-stage production build
 └── README.md
 ```

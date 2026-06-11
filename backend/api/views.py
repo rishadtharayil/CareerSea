@@ -1,6 +1,7 @@
 import logging
 from django.contrib.auth import get_user_model
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.throttling import AnonRateThrottle
@@ -17,14 +18,14 @@ print("--- STARTING CAREERSEA API VIEWS ---")
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 class UserHistoryView(generics.ListAPIView):
     serializer_class = UserResponseSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return UserResponse.objects.filter(user=self.request.user).order_by('-created_at')
-        return UserResponse.objects.none()
+        return UserResponse.objects.filter(user=self.request.user).order_by('-created_at')
 
 class AssessmentBurstThrottle(AnonRateThrottle):
     scope = 'assessment_burst'
@@ -38,6 +39,7 @@ class QuestionListView(generics.ListAPIView):
 
 class SubmitAssessmentView(APIView):
     throttle_classes = [AssessmentBurstThrottle, AssessmentSustainedThrottle]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = UserResponseSerializer(data=request.data)

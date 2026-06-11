@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
@@ -11,8 +11,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
-            await axios.post(`${apiBaseUrl}/api/register/`, { username, email, password });
+            await api.post('/api/register/', { username, email, password });
             alert("Registration successful! You can now log in.");
             navigate('/login');
         } catch (error) {

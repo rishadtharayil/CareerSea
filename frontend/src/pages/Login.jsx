@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
@@ -10,8 +10,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea.in';
-            const res = await axios.post(`${apiBaseUrl}/api/token/`, { username, password });
+            const res = await api.post('/api/token/', { username, password });
             localStorage.setItem('access_token', res.data.access);
             localStorage.setItem('refresh_token', res.data.refresh);
             navigate('/');

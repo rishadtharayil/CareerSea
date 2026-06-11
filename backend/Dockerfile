@@ -18,5 +18,5 @@ COPY . /app/
 # Run collectstatic
 RUN DJANGO_SECRET_KEY=build-dummy python manage.py collectstatic --noinput
 
-# Run migrations, seed data and start server
-CMD ["sh", "-c", "python manage.py migrate && python seed_data.py && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"]
+# Run migrations, seed data (idempotent via get_or_create), and start server
+CMD ["sh", "-c", "python manage.py migrate && python seed_data.py && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]

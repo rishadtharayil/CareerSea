@@ -26,6 +26,16 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      # Grant the Cloud Run compute identity permission to call Vertex AI.
+      # This is idempotent — safe to run on every deploy.
+      - name: Grant Vertex AI access to Cloud Run identity
+        run: |
+          gcloud projects add-iam-policy-binding project-bbccc83a-4d06-4b06-b85 \
+            --member="serviceAccount:1035335423870-compute@developer.gserviceaccount.com" \
+            --role="roles/aiplatform.user" \
+            --condition=None \
+            --quiet
+
       - name: Deploy Backend
         run: |
           cd backend
@@ -33,7 +43,7 @@ jobs:
             --source . \
             --region us-central1 \
             --set-secrets="DJANGO_SECRET_KEY=DJANGO_SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False" \
+            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False,AI_PROVIDER=vertex,GCP_PROJECT=project-bbccc83a-4d06-4b06-b85,GCP_LOCATION=us-central1,VERTEX_MODEL=gemini-2.0-flash-001" \
             --clear-cloudsql-instances \
             --allow-unauthenticated \
             --quiet
