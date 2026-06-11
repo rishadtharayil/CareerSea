@@ -113,6 +113,8 @@ class RoadmapStepDetailView(APIView):
                 step.deep_dive = deep_dive_content
                 step.save()
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 logger.exception("Error generating deep dive during detail fetch")
                 return Response({"error": "Failed to generate deep dive: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -133,17 +135,10 @@ class RoadmapStepChatView(APIView):
         if not user_text:
             return Response({"error": "Message text is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 1. Save user's message
-        ChatMessage.objects.create(
-            step=step,
-            sender='user',
-            text=user_text
-        )
-
-        # 2. Get full chat history (including the message we just saved)
+        # 1. Get existing chat history (before saving the new message)
         history = list(step.chat_messages.all())
 
-        # 3. Call AI mentor
+        # 2. Call AI mentor
         try:
             ai_response = get_step_chat(
                 career_title=step.career.title,
@@ -154,18 +149,25 @@ class RoadmapStepChatView(APIView):
                 new_message=user_text
             )
 
-            # 4. Save AI's response
+            # 3. Save both user message and AI response
+            ChatMessage.objects.create(
+                step=step,
+                sender='user',
+                text=user_text
+            )
             ChatMessage.objects.create(
                 step=step,
                 sender='ai',
                 text=ai_response
             )
 
-            # 5. Return updated chat history
+            # 4. Return updated chat history
             updated_history = step.chat_messages.all()
             serializer = ChatMessageSerializer(updated_history, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.exception("Error generating mentor chat response")
             return Response({"error": "Failed to get mentor response: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
