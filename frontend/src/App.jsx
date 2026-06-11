@@ -20,7 +20,7 @@ function App() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto p-4 sm:p-8 min-h-screen flex flex-col">
+    <div className="max-w-[1500px] mx-auto p-4 sm:p-8 min-h-screen flex flex-col">
       <header className="flex justify-between items-center mb-12 py-4">
         <div className="font-black text-2xl tracking-tighter cursor-pointer" onClick={() => window.location.href = '/'}>
           CAREER<span className="text-primary">SEA</span>

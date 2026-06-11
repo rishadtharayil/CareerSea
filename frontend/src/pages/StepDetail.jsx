@@ -81,56 +81,87 @@ const StepDetail = () => {
 
     const renderMarkdown = (text) => {
         if (!text) return null;
-        const lines = text.split('\n');
-        return lines.map((line, idx) => {
-            const trimmed = line.trim();
-            if (!trimmed) return <div key={idx} className="h-4" />;
+        
+        // Split text by blank lines (paragraphs / block elements)
+        const blocks = text.split(/\n\s*\n/);
+        
+        return blocks.map((block, idx) => {
+            const trimmedBlock = block.trim();
+            if (!trimmedBlock) return null;
 
-            if (trimmed.startsWith('### ')) {
+            // Code blocks
+            if (trimmedBlock.startsWith('```')) {
+                const lines = trimmedBlock.split('\n');
+                const contentLines = lines.slice(1, lines[lines.length - 1].startsWith('```') ? -1 : undefined);
                 return (
-                    <h4 key={idx} className="text-lg font-black uppercase mt-6 mb-3 border-b-2 border-text pb-1">
-                        {trimmed.replace('### ', '')}
+                    <pre key={idx} className="bg-surface border-4 border-text p-4 my-4 font-mono text-xs overflow-x-auto shadow-pop-sm rounded-pop text-left">
+                        <code>{contentLines.join('\n')}</code>
+                    </pre>
+                );
+            }
+
+            // Headers
+            if (trimmedBlock.startsWith('### ')) {
+                return (
+                    <h4 key={idx} className="text-lg font-black uppercase mt-6 mb-3 border-b-2 border-text pb-1 text-left">
+                        {trimmedBlock.replace('### ', '')}
                     </h4>
                 );
             }
-            
-            if (trimmed.startsWith('## ')) {
+            if (trimmedBlock.startsWith('## ')) {
                 return (
-                    <h3 key={idx} className="text-xl font-black uppercase mt-8 mb-4 border-b-4 border-text pb-2">
-                        {trimmed.replace('## ', '')}
+                    <h3 key={idx} className="text-xl font-black uppercase mt-8 mb-4 border-b-4 border-text pb-2 text-left">
+                        {trimmedBlock.replace('## ', '')}
                     </h3>
                 );
             }
-
-            if (trimmed.startsWith('# ')) {
+            if (trimmedBlock.startsWith('# ')) {
                 return (
-                    <h2 key={idx} className="text-2xl font-black uppercase mt-10 mb-6 border-b-4 border-text pb-2">
-                        {trimmed.replace('# ', '')}
+                    <h2 key={idx} className="text-2xl font-black uppercase mt-10 mb-6 border-b-4 border-text pb-2 text-left">
+                        {trimmedBlock.replace('# ', '')}
                     </h2>
                 );
             }
 
-            if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                const content = trimmed.substring(2);
+            // Unordered lists
+            if (trimmedBlock.startsWith('- ') || trimmedBlock.startsWith('* ')) {
+                const items = trimmedBlock.split('\n').map(i => i.trim()).filter(Boolean);
                 return (
-                    <li key={idx} className="ml-4 list-disc font-bold text-text-light mb-2 leading-relaxed text-sm sm:text-base">
-                        {parseInlineBold(content)}
-                    </li>
+                    <ul key={idx} className="mb-4 text-left">
+                        {items.map((item, itemIdx) => {
+                            const cleanItem = item.replace(/^[\-\*]\s+/, '');
+                            return (
+                                <li key={itemIdx} className="ml-4 list-disc font-bold text-text-light mb-2 leading-relaxed text-sm sm:text-base">
+                                    {parseInlineBold(cleanItem)}
+                                </li>
+                            );
+                        })}
+                    </ul>
                 );
             }
 
-            const olMatch = trimmed.match(/^(\d+)\.\s(.*)/);
-            if (olMatch) {
+            // Ordered lists
+            if (trimmedBlock.match(/^\d+\.\s/)) {
+                const items = trimmedBlock.split('\n').map(i => i.trim()).filter(Boolean);
                 return (
-                    <li key={idx} className="ml-4 list-decimal font-bold text-text-light mb-2 leading-relaxed text-sm sm:text-base">
-                        {parseInlineBold(olMatch[2])}
-                    </li>
+                    <ol key={idx} className="mb-4 text-left">
+                        {items.map((item, itemIdx) => {
+                            const cleanItem = item.replace(/^\d+\.\s+/, '');
+                            return (
+                                <li key={itemIdx} className="ml-4 list-decimal font-bold text-text-light mb-2 leading-relaxed text-sm sm:text-base">
+                                    {parseInlineBold(cleanItem)}
+                                </li>
+                            );
+                        })}
+                    </ol>
                 );
             }
 
+            // Standard Paragraph - collapse single newlines into spaces to allow text to flow naturally
+            const collapsedText = trimmedBlock.replace(/\n+/g, ' ');
             return (
-                <p key={idx} className="font-bold text-text-light mb-4 leading-relaxed text-sm sm:text-base">
-                    {parseInlineBold(trimmed)}
+                <p key={idx} className="font-bold text-text-light mb-4 leading-relaxed text-sm sm:text-base text-left">
+                    {parseInlineBold(collapsedText)}
                 </p>
             );
         });
@@ -143,7 +174,7 @@ const StepDetail = () => {
 
     if (loading) {
         return (
-            <div className="max-w-[1200px] mx-auto py-12 px-4 flex flex-col gap-8 items-center justify-center min-h-[70vh]">
+            <div className="max-w-[1500px] mx-auto py-12 px-4 flex flex-col gap-8 items-center justify-center min-h-[70vh]">
                 <motion.div
                     animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0, -5, 0] }}
                     transition={{ repeat: Infinity, duration: 2 }}
@@ -182,7 +213,7 @@ const StepDetail = () => {
     }
 
     return (
-        <div className="max-w-[1400px] mx-auto pb-16 px-4 sm:px-6 relative">
+        <div className="max-w-[1500px] mx-auto pb-16 px-4 sm:px-6 relative">
             
             {/* Back Button */}
             <div className="mb-8">
