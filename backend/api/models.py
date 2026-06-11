@@ -44,3 +44,16 @@ class RoadmapStep(models.Model):
 
     def __str__(self):
         return f"{self.order}. {self.title} ({self.career.title})"
+
+
+class ChatMessage(models.Model):
+    step = models.ForeignKey(RoadmapStep, on_delete=models.CASCADE, related_name='chat_messages')
+    sender = models.CharField(max_length=50) # 'user' or 'ai'
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender}: {self.text[:30]}..."

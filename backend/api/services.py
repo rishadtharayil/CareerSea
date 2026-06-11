@@ -352,3 +352,138 @@ def get_step_deep_dive(career_title: str, step_title: str, step_description: str
             f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
             "Valid values: 'vertex', 'openrouter', 'aistudio'."
         )
+
+
+def _build_chat_prompt(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+    history_str = ""
+    for msg in chat_history:
+        role = "Student" if msg.sender == "user" else "AI Mentor"
+        history_str += f"{role}: {msg.text}\n"
+
+    return f"""
+You are a senior mentor and career coach in the field of "{career_title}".
+You are helping a student master this roadmap step:
+Step Title: {step_title}
+Step Description: {step_description}
+
+Here is the detailed study guide for this step:
+{deep_dive}
+
+Below is the chat history of your conversation so far:
+{history_str}
+Student: {new_message}
+
+Provide a helpful, direct, and highly actionable response to the student's message. Stay strictly in character as an inspiring, supportive senior mentor. Write in clean Markdown format. Keep your response concise (1-3 paragraphs) and focused, providing code snippets or library names if requested. Avoid generic filler.
+""".strip()
+
+
+def _get_step_chat_vertex(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+    try:
+        import vertexai
+        from vertexai.generative_models import GenerativeModel
+    except ImportError:
+        raise Exception("google-cloud-aiplatform is not installed.")
+
+    vertexai.init(project=GCP_PROJECT, location=GCP_LOCATION)
+    model = GenerativeModel(
+        VERTEX_MODEL,
+        system_instruction="You are a helpful and inspiring senior mentor.",
+    )
+
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        logger.exception("Error calling Vertex AI for step chat")
+        raise e
+
+
+def _get_step_chat_openrouter(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+    import requests
+
+    if not OPENROUTER_API_KEY:
+        logger.error("OPENROUTER_API_KEY is not set.")
+        raise Exception("OpenRouter API Key is missing.")
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://careersea.in",
+        "X-Title": "CareerSea",
+    }
+
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+
+    data = {
+        "model": OPENROUTER_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a helpful and inspiring senior mentor."},
+            {"role": "user",   "content": prompt},
+        ],
+    }
+
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=60,
+        )
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"]
+        return content
+    except Exception as e:
+        logger.exception("Error calling OpenRouter for step chat")
+        raise e
+
+
+def _get_step_chat_aistudio(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+    import requests
+
+    if not AISTUDIO_API_KEY:
+        logger.error("AISTUDIO_API_KEY is not set.")
+        raise Exception("AI Studio API Key is missing.")
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    
+    headers = {"Content-Type": "application/json"}
+    
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    
+    data = {
+        "system_instruction": {
+            "parts": [{"text": "You are a helpful and inspiring senior mentor."}]
+        },
+        "contents": [
+            {"role": "user", "parts": [{"text": prompt}]}
+        ],
+        "generationConfig": {
+            "temperature": 0.7
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+        response.raise_for_status()
+        content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return content
+    except Exception as e:
+        logger.exception("Error calling AI Studio for step chat")
+        raise e
+
+
+def get_step_chat(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+    logger.info("AI provider for step chat: %s", AI_PROVIDER)
+
+    if AI_PROVIDER == "vertex":
+        return _get_step_chat_vertex(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    elif AI_PROVIDER == "openrouter":
+        return _get_step_chat_openrouter(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    elif AI_PROVIDER == "aistudio":
+        return _get_step_chat_aistudio(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    else:
+        raise Exception(
+            f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
+            "Valid values: 'vertex', 'openrouter', 'aistudio'."
+        )

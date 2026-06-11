@@ -7,6 +7,7 @@ import Roadmap from './components/Roadmap';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import StepDetail from './pages/StepDetail';
 
 function App() {
   const location = useLocation();
@@ -48,6 +49,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/step/:id" element={<StepDetail />} />
           </Routes>
         </AnimatePresence>
       </main>

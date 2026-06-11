@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.throttling import AnonRateThrottle
 from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
-from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer
-from .services import get_career_suggestion, get_step_deep_dive
+from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer, RoadmapStepSerializer, ChatMessageSerializer
+from .services import get_career_suggestion, get_step_deep_dive, get_step_chat
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -91,7 +91,36 @@ class SubmitAssessmentView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RoadmapStepDeepDiveView(APIView):
+class RoadmapStepDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, step_id):
+        try:
+            step = RoadmapStep.objects.get(pk=step_id)
+        except RoadmapStep.DoesNotExist:
+            return Response({"error": "RoadmapStep not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate deep dive on demand if it doesn't exist yet
+        if not step.deep_dive:
+            try:
+                deep_dive_content = get_step_deep_dive(
+                    career_title=step.career.title,
+                    step_title=step.title,
+                    step_description=step.description,
+                    duration=step.duration,
+                    resources=step.resources
+                )
+                step.deep_dive = deep_dive_content
+                step.save()
+            except Exception as e:
+                logger.exception("Error generating deep dive during detail fetch")
+                return Response({"error": "Failed to generate deep dive: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        serializer = RoadmapStepSerializer(step)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RoadmapStepChatView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, step_id):
@@ -100,24 +129,43 @@ class RoadmapStepDeepDiveView(APIView):
         except RoadmapStep.DoesNotExist:
             return Response({"error": "RoadmapStep not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # If already cached in DB, return it immediately
-        if step.deep_dive:
-            return Response({"deep_dive": step.deep_dive}, status=status.HTTP_200_OK)
+        user_text = request.data.get('text', '').strip()
+        if not user_text:
+            return Response({"error": "Message text is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Otherwise, generate via AI
+        # 1. Save user's message
+        ChatMessage.objects.create(
+            step=step,
+            sender='user',
+            text=user_text
+        )
+
+        # 2. Get full chat history (including the message we just saved)
+        history = list(step.chat_messages.all())
+
+        # 3. Call AI mentor
         try:
-            deep_dive_content = get_step_deep_dive(
+            ai_response = get_step_chat(
                 career_title=step.career.title,
                 step_title=step.title,
                 step_description=step.description,
-                duration=step.duration,
-                resources=step.resources
+                deep_dive=step.deep_dive or "No study guide available.",
+                chat_history=history,
+                new_message=user_text
             )
-            # Save to database to load fast next time
-            step.deep_dive = deep_dive_content
-            step.save()
 
-            return Response({"deep_dive": deep_dive_content}, status=status.HTTP_200_OK)
+            # 4. Save AI's response
+            ChatMessage.objects.create(
+                step=step,
+                sender='ai',
+                text=ai_response
+            )
+
+            # 5. Return updated chat history
+            updated_history = step.chat_messages.all()
+            serializer = ChatMessageSerializer(updated_history, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         except Exception as e:
-            logger.exception("Error generating deep dive")
-            return Response({"error": "Failed to generate deep dive: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception("Error generating mentor chat response")
+            return Response({"error": "Failed to get mentor response: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

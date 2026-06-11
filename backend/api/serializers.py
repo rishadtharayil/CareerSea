@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
+from .models import Question, UserResponse, CareerSuggestion, RoadmapStep, ChatMessage
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -22,10 +22,17 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = ['id', 'text', 'order', 'choices']
 
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'sender', 'text', 'created_at']
+
 class RoadmapStepSerializer(serializers.ModelSerializer):
+    chat_messages = ChatMessageSerializer(many=True, read_only=True)
+
     class Meta:
         model = RoadmapStep
-        fields = ['id', 'order', 'title', 'description', 'duration', 'resources', 'deep_dive']
+        fields = ['id', 'order', 'title', 'description', 'duration', 'resources', 'deep_dive', 'chat_messages']
 
 class CareerSuggestionSerializer(serializers.ModelSerializer):
     roadmap_steps = RoadmapStepSerializer(many=True, read_only=True)
