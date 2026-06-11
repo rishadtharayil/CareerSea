@@ -17,7 +17,7 @@ GCP_LOCATION   = os.environ.get("GCP_LOCATION", "us-central1")
 VERTEX_MODEL   = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash-001")
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-OPENROUTER_MODEL   = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+OPENROUTER_MODEL   = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
 
 
 # ---------------------------------------------------------------------------
