@@ -224,3 +224,131 @@ def get_career_suggestion(answers: dict) -> list:
             f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
             "Valid values: 'vertex', 'openrouter', 'aistudio'."
         )
+
+
+def _build_deep_dive_prompt(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+    resources_str = ", ".join(resources) if resources else "None provided"
+    return f"""
+You are a senior mentor and career coach in the field of "{career_title}".
+Provide a highly detailed, comprehensive study guide for this specific roadmap step:
+Step Title: {step_title}
+Description: {step_description}
+Estimated Duration: {duration}
+Key Resources: {resources_str}
+
+Your guide should be structured, practical, and motivating. Write in clean Markdown format. You must cover the following sections:
+1.  **Core Concepts to Master**: Break down this step into 3-4 essential technical concepts or skills the user must learn. Explain what each is and why it's important.
+2.  **Weekly Study Plan / Milestones**: Suggest a timeline or progressive milestones (e.g., Week 1-2, Week 3-4, etc.) to cover this step within the {duration} timeframe.
+3.  **Hands-on Project to Build**: Propose one specific, concrete mini-project the user should build to prove they have mastered this step. Give it a title, a brief description, and a list of key features.
+4.  **Advanced Resources & Communities**: Suggest 2-3 additional real-world learning materials, documentation links, or communities (like Discord channels, subreddits, or forums) where they can get help.
+
+Write in a direct, encouraging, Neubrutalist-adjacent style (bold headings, no fluff, extremely actionable).
+""".strip()
+
+
+def _get_step_deep_dive_vertex(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+    try:
+        import vertexai
+        from vertexai.generative_models import GenerativeModel
+    except ImportError:
+        raise Exception("google-cloud-aiplatform is not installed.")
+
+    vertexai.init(project=GCP_PROJECT, location=GCP_LOCATION)
+    model = GenerativeModel(
+        VERTEX_MODEL,
+        system_instruction="You are a helpful and inspiring senior mentor.",
+    )
+
+    prompt = _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        logger.exception("Error calling Vertex AI for deep dive")
+        raise e
+
+
+def _get_step_deep_dive_openrouter(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+    import requests
+
+    if not OPENROUTER_API_KEY:
+        logger.error("OPENROUTER_API_KEY is not set.")
+        raise Exception("OpenRouter API Key is missing.")
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://careersea.in",
+        "X-Title": "CareerSea",
+    }
+
+    data = {
+        "model": OPENROUTER_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a helpful and inspiring senior mentor."},
+            {"role": "user",   "content": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)},
+        ],
+    }
+
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=60,
+        )
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"]
+        return content
+    except Exception as e:
+        logger.exception("Error calling OpenRouter for deep dive")
+        raise e
+
+
+def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+    import requests
+
+    if not AISTUDIO_API_KEY:
+        logger.error("AISTUDIO_API_KEY is not set.")
+        raise Exception("AI Studio API Key is missing.")
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    
+    headers = {"Content-Type": "application/json"}
+    
+    data = {
+        "system_instruction": {
+            "parts": [{"text": "You are a helpful and inspiring senior mentor."}]
+        },
+        "contents": [
+            {"role": "user", "parts": [{"text": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)}]}
+        ],
+        "generationConfig": {
+            "temperature": 0.7
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+        response.raise_for_status()
+        content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return content
+    except Exception as e:
+        logger.exception("Error calling AI Studio for deep dive")
+        raise e
+
+
+def get_step_deep_dive(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+    logger.info("AI provider for deep dive: %s", AI_PROVIDER)
+
+    if AI_PROVIDER == "vertex":
+        return _get_step_deep_dive_vertex(career_title, step_title, step_description, duration, resources)
+    elif AI_PROVIDER == "openrouter":
+        return _get_step_deep_dive_openrouter(career_title, step_title, step_description, duration, resources)
+    elif AI_PROVIDER == "aistudio":
+        return _get_step_deep_dive_aistudio(career_title, step_title, step_description, duration, resources)
+    else:
+        raise Exception(
+            f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
+            "Valid values: 'vertex', 'openrouter', 'aistudio'."
+        )

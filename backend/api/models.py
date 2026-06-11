@@ -37,6 +37,7 @@ class RoadmapStep(models.Model):
     duration = models.CharField(max_length=100, blank=True)
     order = models.IntegerField(default=0)
     resources = models.JSONField(default=list, blank=True) # List of links or resource names
+    deep_dive = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['order']

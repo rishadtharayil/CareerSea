@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.throttling import AnonRateThrottle
 from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
 from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer
-from .services import get_career_suggestion
+from .services import get_career_suggestion, get_step_deep_dive
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -89,3 +89,35 @@ class SubmitAssessmentView(APIView):
                 return Response({"error": "AI Service Failed: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RoadmapStepDeepDiveView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, step_id):
+        try:
+            step = RoadmapStep.objects.get(pk=step_id)
+        except RoadmapStep.DoesNotExist:
+            return Response({"error": "RoadmapStep not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # If already cached in DB, return it immediately
+        if step.deep_dive:
+            return Response({"deep_dive": step.deep_dive}, status=status.HTTP_200_OK)
+
+        # Otherwise, generate via AI
+        try:
+            deep_dive_content = get_step_deep_dive(
+                career_title=step.career.title,
+                step_title=step.title,
+                step_description=step.description,
+                duration=step.duration,
+                resources=step.resources
+            )
+            # Save to database to load fast next time
+            step.deep_dive = deep_dive_content
+            step.save()
+
+            return Response({"deep_dive": deep_dive_content}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception("Error generating deep dive")
+            return Response({"error": "Failed to generate deep dive: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

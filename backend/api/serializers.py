@@ -25,7 +25,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class RoadmapStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoadmapStep
-        fields = ['order', 'title', 'description', 'duration', 'resources']
+        fields = ['id', 'order', 'title', 'description', 'duration', 'resources', 'deep_dive']
 
 class CareerSuggestionSerializer(serializers.ModelSerializer):
     roadmap_steps = RoadmapStepSerializer(many=True, read_only=True)
