@@ -32,7 +32,7 @@ class CareerSuggestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CareerSuggestion
-        fields = ['id', 'title', 'description', 'reasoning', 'roadmap_steps']
+        fields = ['id', 'title', 'type', 'description', 'reasoning', 'roadmap_steps']
 
 class UserResponseSerializer(serializers.ModelSerializer):
     suggestions = CareerSuggestionSerializer(many=True, read_only=True)

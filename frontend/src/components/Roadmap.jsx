@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, BookOpen, Home, CheckCircle } from 'lucide-react';
@@ -9,6 +9,8 @@ const Roadmap = () => {
     const navigate = useNavigate();
     const data = location.state?.data;
 
+    const [activeTab, setActiveTab] = useState(0);
+
     if (!data || !data.suggestions || data.suggestions.length === 0) {
         return (
             <div className="min-h-[80vh] flex flex-col items-center justify-center gap-12 text-center px-4">
@@ -18,10 +20,27 @@ const Roadmap = () => {
         );
     }
 
-    const suggestion = data.suggestions[0];
+    const suggestion = data.suggestions[activeTab];
 
     return (
         <div className="max-w-[1000px] mx-auto pb-24 px-4 sm:px-6">
+
+            {/* Path Selector Tabs */}
+            <div className="flex flex-wrap justify-center gap-4 mt-8 mb-12">
+                {data.suggestions.map((sug, index) => (
+                    <button
+                        key={sug.id || index}
+                        onClick={() => setActiveTab(index)}
+                        className={`px-6 py-3 font-black uppercase transition-transform border-4 border-text ${
+                            activeTab === index 
+                                ? 'bg-primary shadow-pop -translate-y-2' 
+                                : 'bg-surface hover:-translate-y-1 hover:shadow-pop-sm'
+                        }`}
+                    >
+                        {sug.type || `Path ${index + 1}`}
+                    </button>
+                ))}
+            </div>
 
             {/* Header Section */}
             <div className="text-center mb-20 pt-8">

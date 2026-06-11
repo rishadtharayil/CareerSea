@@ -6,34 +6,34 @@ django.setup()
 
 from api.models import Question
 
+Question.objects.all().delete()
+print("Cleared existing questions.")
+
 questions = [
     {
-        "text": "What fields interest you the most?",
-        "choices": ["Technology & Engineering", "Healthcare & Medicine", "Arts & Design", "Business & Finance", "Social Sciences & Education"]
+        "text": "Scenario: Your team's project is failing and the deadline is tomorrow. What do you do first?",
+        "choices": ["Analyze the data to find the root cause", "Organize an emergency brainstorming session", "Take charge and delegate tasks aggressively", "Focus on completing the most critical component myself"]
     },
     {
-        "text": "How do you prefer to solve problems?",
-        "choices": ["Analyzing data and logic", "Brainstorming creative solutions", "Discussing with others", "Hands-on experimentation"]
+        "text": "When learning a complex new topic, what is your preferred approach?",
+        "choices": ["Reading the official documentation and theory", "Building a small project immediately (trial and error)", "Watching a comprehensive video tutorial or lecture", "Discussing the concepts with a mentor or peer"]
     },
     {
-        "text": "What kind of work environment do you thrive in?",
-        "choices": ["Structured and organized", "Flexible and dynamic", "Collaborative team setting", "Quiet and independent"]
+        "text": "What type of impact motivates you the most?",
+        "choices": ["Creating scalable systems or products", "Directly improving individual people's lives", "Driving business growth and strategy", "Advancing artistic or creative boundaries"]
     },
     {
-        "text": "What is a key value you look for in a career?",
-        "choices": ["High income potential", "Work-life balance", "Helping others", "Creative freedom", "Innovation"]
+        "text": "What is your current educational background and professional experience? (We'll use this to skip basic steps you already know.)",
+        "choices": [] # Open text
     },
     {
-        "text": "Briefly describe your dream job or passion.",
+        "text": "Are there any specific tools, technologies, or skills you already feel confident in?",
         "choices": [] # Open text
     }
 ]
 
 for i, q in enumerate(questions):
     obj, created = Question.objects.get_or_create(text=q["text"], defaults={"order": i+1, "choices": q["choices"]})
-    if created:
-        print(f"Created question: {q['text']}")
-    else:
-        print(f"Question already exists: {q['text']}")
+    print(f"Created question: {q['text']}")
 
 print("Seeding complete.")

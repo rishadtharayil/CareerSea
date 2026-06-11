@@ -26,37 +26,54 @@ OPENROUTER_MODEL   = os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3-super
 
 def _build_prompt(answers: dict) -> str:
     return f"""
-You are a career counselor. Based on the following user responses, suggest the ONE best career path and provide a very detailed, step-by-step roadmap to achieve it.
+You are a career counselor. Based on the following user responses, suggest THREE distinct career avenues:
+1. "mainstream" (direct match to their skills/interests)
+2. "adjacent" (a pivot leveraging their transferable skills)
+3. "wildcard" (a bold, unexpected path based on their implicit traits)
+
+For each path, provide a very detailed, step-by-step roadmap to achieve it.
+CRITICAL INSTRUCTION: Analyze their current background (education, current job) and SKIP roadmap steps they have already mastered. Tailor the guide strictly to their current level.
 
 User Responses:
 {json.dumps(answers, indent=2)}
 
 Return the output in the following STRICT JSON format (no markdown, no other text):
-{{
-    "career": {{
-        "title": "Career Title",
-        "description": "Inspiring description of the career",
-        "reasoning": "Why this matches the user's profile"
+[
+    {{
+        "type": "mainstream",
+        "career": {{
+            "title": "Career Title",
+            "description": "Inspiring description of the career",
+            "reasoning": "Why this matches the user's profile"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Actionable instructions and details.",
+                "duration": "e.g., 1 month",
+                "resources": [
+                    "Free Code Camp - Responsive Web Design",
+                    "Official Python Documentation",
+                    "Udemy - Complete React Bootcamp"
+                ]
+            }}
+        ]
     }},
-    "roadmap": [
-        {{
-            "title": "Detailed Step Title",
-            "description": "Actionable instructions and details.",
-            "duration": "e.g., 1 month",
-            "resources": [
-                "Free Code Camp - Responsive Web Design",
-                "Official Python Documentation",
-                "Udemy - Complete React Bootcamp"
-            ]
-        }}
-    ]
-}}
+    {{
+        "type": "adjacent",
+        ...
+    }},
+    {{
+        "type": "wildcard",
+        ...
+    }}
+]
 
 IMPORTANT: For "resources", provide at least 2-3 specific, real-world learning resources, documentation links, or course names. Do not use generic placeholders.
 """.strip()
 
 
-def _parse_response(content: str) -> dict:
+def _parse_response(content: str) -> list:
     """Strip optional markdown fences and parse JSON."""
     raw = content.strip()
     if "```json" in raw:
@@ -71,7 +88,7 @@ def _parse_response(content: str) -> dict:
 # Uses Cloud Run's built-in service-account identity. No API key required.
 # ---------------------------------------------------------------------------
 
-def _get_career_suggestion_vertex(answers: dict) -> dict:
+def _get_career_suggestion_vertex(answers: dict) -> list:
     try:
         import vertexai
         from vertexai.generative_models import GenerativeModel
@@ -103,7 +120,7 @@ def _get_career_suggestion_vertex(answers: dict) -> dict:
 # Switch with: AI_PROVIDER=openrouter
 # ---------------------------------------------------------------------------
 
-def _get_career_suggestion_openrouter(answers: dict) -> dict:
+def _get_career_suggestion_openrouter(answers: dict) -> list:
     import requests
 
     if not OPENROUTER_API_KEY:
@@ -144,7 +161,7 @@ def _get_career_suggestion_openrouter(answers: dict) -> dict:
 # Public API — dispatches based on AI_PROVIDER env var
 # ---------------------------------------------------------------------------
 
-def get_career_suggestion(answers: dict) -> dict:
+def get_career_suggestion(answers: dict) -> list:
     """
     Dispatches to the configured AI provider.
 

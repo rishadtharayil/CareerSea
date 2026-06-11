@@ -23,6 +23,7 @@ class UserResponse(models.Model):
 class CareerSuggestion(models.Model):
     user_response = models.ForeignKey(UserResponse, on_delete=models.CASCADE, related_name='suggestions')
     title = models.CharField(max_length=255)
+    type = models.CharField(max_length=50, blank=True) # e.g. mainstream, adjacent, wildcard
     description = models.TextField()
     reasoning = models.TextField()
 
