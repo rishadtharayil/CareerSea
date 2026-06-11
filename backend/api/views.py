@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.throttling import AnonRateThrottle
-from .models import Question, UserResponse, CareerSuggestion, RoadmapStep
+from .models import Question, UserResponse, CareerSuggestion, RoadmapStep, ChatMessage
 from .serializers import QuestionSerializer, UserResponseSerializer, UserSerializer, RoadmapStepSerializer, ChatMessageSerializer
 from .services import get_career_suggestion, get_step_deep_dive, get_step_chat
 
