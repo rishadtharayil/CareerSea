@@ -19,6 +19,9 @@ VERTEX_MODEL   = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash-001")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 OPENROUTER_MODEL   = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
 
+AISTUDIO_API_KEY = os.environ.get("AISTUDIO_API_KEY")
+AISTUDIO_MODEL   = os.environ.get("AISTUDIO_MODEL", "gemini-3.1-flash-lite")
+
 
 # ---------------------------------------------------------------------------
 # Shared: prompt builder & response parser
@@ -156,6 +159,44 @@ def _get_career_suggestion_openrouter(answers: dict) -> list:
         logger.exception("Error calling OpenRouter")
         raise e
 
+# ---------------------------------------------------------------------------
+# Provider: Google AI Studio
+# Requires AISTUDIO_API_KEY environment variable.
+# Switch with: AI_PROVIDER=aistudio
+# ---------------------------------------------------------------------------
+
+def _get_career_suggestion_aistudio(answers: dict) -> list:
+    import requests
+
+    if not AISTUDIO_API_KEY:
+        logger.error("AISTUDIO_API_KEY is not set.")
+        raise Exception("AI Studio API Key is missing.")
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    
+    headers = {"Content-Type": "application/json"}
+    
+    data = {
+        "system_instruction": {
+            "parts": [{"text": "You are a helpful and inspiring career coach."}]
+        },
+        "contents": [
+            {"role": "user", "parts": [{"text": _build_prompt(answers)}]}
+        ],
+        "generationConfig": {
+            "temperature": 0.7
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+        response.raise_for_status()
+        content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return _parse_response(content)
+    except Exception as e:
+        logger.exception("Error calling AI Studio")
+        raise e
+
 
 # ---------------------------------------------------------------------------
 # Public API — dispatches based on AI_PROVIDER env var
@@ -167,6 +208,7 @@ def get_career_suggestion(answers: dict) -> list:
 
     AI_PROVIDER=vertex     → Vertex AI Gemini (default, production)
     AI_PROVIDER=openrouter → OpenRouter API   (fallback / local dev)
+    AI_PROVIDER=aistudio   → Google AI Studio
     """
     logger.info("AI provider: %s", AI_PROVIDER)
 
@@ -174,8 +216,10 @@ def get_career_suggestion(answers: dict) -> list:
         return _get_career_suggestion_vertex(answers)
     elif AI_PROVIDER == "openrouter":
         return _get_career_suggestion_openrouter(answers)
+    elif AI_PROVIDER == "aistudio":
+        return _get_career_suggestion_aistudio(answers)
     else:
         raise Exception(
             f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
-            "Valid values: 'vertex', 'openrouter'."
+            "Valid values: 'vertex', 'openrouter', 'aistudio'."
         )
