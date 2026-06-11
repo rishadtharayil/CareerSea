@@ -33,7 +33,7 @@ jobs:
             --source . \
             --region us-central1 \
             --set-secrets="DJANGO_SECRET_KEY=DJANGO_SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False,AI_PROVIDER=vertex,GCP_PROJECT=project-bbccc83a-4d06-4b06-b85,GCP_LOCATION=us-central1,VERTEX_MODEL=gemini-2.0-flash-001" \
+            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False,AI_PROVIDER=openrouter,GCP_PROJECT=project-bbccc83a-4d06-4b06-b85,GCP_LOCATION=us-central1,VERTEX_MODEL=gemini-2.0-flash-001" \
             --clear-cloudsql-instances \
             --allow-unauthenticated \
             --quiet
