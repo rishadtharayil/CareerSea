@@ -16,6 +16,15 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load local .env file if it exists
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    with open(env_path) as f:
+        for line in f:
+            if line.strip() and not line.startswith('#'):
+                key, val = line.strip().split('=', 1)
+                os.environ[key.strip()] = val.strip()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -68,6 +77,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://careersea.in',
     'https://www.careersea.in',
 ]
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CSRF_TRUSTED_ORIGINS = [
     'https://careersea.in',
     'https://www.careersea.in',
