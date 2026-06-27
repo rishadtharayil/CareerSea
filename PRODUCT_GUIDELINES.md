@@ -13,10 +13,11 @@ CareerSea is evolving from a simple "Roadmap Generator" into a comprehensive "Ca
 - **Old way:** A static list of steps.
 - **New way:** A dashboard where users can check off completed steps and track their journey.
 
-## 💰 Monetization Strategy (Phase 1-3)
-1.  **Phase 1 (Ad-Supported):** Google AdSense integration at the footer of results.
-2.  **Phase 2 (Affiliate):** Link to specific courses (Udemy/Coursera) in the "Resources" section.
-3.  **Phase 3 (Premium):** "Deep-Dive" roadmaps with mentor-style AI feedback for a small one-time fee.
+## 🌍 Open-Source & Non-Profit Ethos
+CareerSea is a completely free, open-source project dedicated to democratic educational access. There is no monetization, advertising, or paywalls of any kind. 
+- **Free for Everyone**: All roadmaps, deep-dive guides, and AI mentor conversations are 100% free and open.
+- **Privacy-First**: No user data is sold, monetized, or shared with third-party networks.
+- **Resource Curation**: Educational links recommended in the "Resources" section are selected purely for quality and accessibility (preferring free platforms like freeCodeCamp, MDN, and Khan Academy), without any affiliate tracking or marketing links.
 
 ## 🗺️ Feature Roadmap
 

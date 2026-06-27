@@ -34,5 +34,5 @@ CareerSea is a **Career Discovery Engine**, not just a roadmap generator. Our go
 
 ## 📚 Reference Files
 - `ARCHITECTURE.md`: Technical stack and deployment flow.
-- `PRODUCT_GUIDELINES.md`: Vision, monetization, and feature roadmap.
+- `PRODUCT_GUIDELINES.md`: Vision, ethos, and feature roadmap.
 - `README.md`: Public-facing project overview.
