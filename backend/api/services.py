@@ -25,8 +25,9 @@ def _extract_age_group(user_answers: dict) -> str:
     if not user_answers:
         return "Not specified"
     for key, value in user_answers.items():
-        if "age" in key.lower():
-            return value
+        if "context" in key.lower() or "age" in key.lower():
+            if value and str(value).strip():
+                return str(value).strip()
     return "Not specified"
 
 
@@ -35,22 +36,110 @@ def _extract_age_group(user_answers: dict) -> str:
 # ---------------------------------------------------------------------------
 
 def _build_prompt(answers: dict) -> str:
-    age_group = _extract_age_group(answers)
-    return f"""
-You are a professional youth career counselor and guidance coach. Based on the following user responses, suggest THREE distinct career avenues for a child/teenager in the age group of "{age_group}":
-1. "mainstream" (direct match to their skills/interests)
-2. "adjacent" (a pivot leveraging their transferable skills)
-3. "wildcard" (a bold, unexpected path based on their implicit traits)
+    custom_explore = answers.get("custom_explore")
+    soft_context = _extract_age_group(answers)
+    
+    if custom_explore:
+        return f"""
+You are a professional career counselor and guidance coach.
+The user wants to explore the career field of "{custom_explore}".
+
+Any age, experience level, or background context provided: "{soft_context}"
+If a specific age or experience level is mentioned in the context above (e.g. 14 years old, junior, no experience), you MUST tailor the resources and the difficulty of the roadmap steps to be developmentally appropriate for that level. Otherwise, default to standard professional career steps.
+
+Suggest THREE distinct sub-avenues, specializations, or related pathways within or adjacent to "{custom_explore}". You must structure them as follows:
+1. "mainstream": The most conventional professional path or direct route within this field (e.g. for "Space Architect", designing lunar/Mars habitats).
+2. "adjacent": A different discipline or industry that heavily leverages this field's skills (e.g. for "Space Architect", designing extreme-environment underwater habitats on Earth).
+3. "wildcard": An emerging, future-oriented, or highly unconventional role that most people wouldn't associate with this field (e.g. for "Space Architect", designing virtual-reality physics engines or space tourism experiences).
+
+CRITICAL PATH DIVERGENCE RULE: The three paths MUST be completely different disciplines or specializations. Do not suggest career levels, seniority levels, or promotional tiers (e.g. Junior developer -> Senior developer -> Tech lead) as different paths. They must represent parallel, divergent avenues.
 
 For each path, provide a highly detailed, step-by-step roadmap to explore and prepare for it.
 
-CRITICAL INSTRUCTION 1: You MUST tailor the entire roadmap and its steps to the user's developmental age group: "{age_group}".
-- For Elementary/Middle Schoolers (8-14 years old): Do not suggest college degrees, high-stakes internships, or professional jobs as early steps. Instead, recommend fun, age-appropriate exploration and foundation building (e.g. learning Scratch/block-coding for tech, building Lego Mindstorms, joining school clubs, reading youth-oriented books, visiting science museums, drawing, writing creative stories). Keep the steps highly active, encouraging, and focused on learning through play and introductory skills.
-- For High Schoolers (15-18 years old): Suggest high school classes to take, introductory online courses (e.g. Coursera, Udemy, freeCodeCamp, Khan Academy), building git portfolios, joining speech/debate, local volunteering, coding simple projects, and looking for early internships or preparing for university major selection.
+CRITICAL INSTRUCTION 1: Each roadmap must consist of at least 4-5 progressive milestones/steps. Map out a thorough journey from starting out with zero knowledge to professional mastery and job readiness.
+CRITICAL INSTRUCTION 2: Each step's description must be extremely detailed, concrete, and rich (at least 3-5 sentences long). Provide specific sub-tasks, methodologies, tools/libraries to learn, and concrete projects they should build.
+CRITICAL INSTRUCTION 3: For each step, provide 3-4 highly specific, real-world learning resources, official documentation links, books, or online courses. Avoid general descriptions.
 
-CRITICAL INSTRUCTION 2: Each roadmap must consist of at least 4-5 progressive milestones/steps. Do not truncate the roadmap to just 1 or 2 steps; even if they have some prior knowledge, map out a thorough journey from where they are today to professional mastery and job readiness.
-CRITICAL INSTRUCTION 3: Each step's description must be extremely detailed, concrete, and rich (at least 3-5 sentences long). Provide specific sub-tasks, methodologies, tools/libraries to learn, and concrete projects they should build to prove their competence.
-CRITICAL INSTRUCTION 4: For each step, provide 3-4 highly specific, real-world learning resources, official documentation links, books, or online courses. Avoid general descriptions like "tutorials" or "online resources".
+Return the output in the following STRICT JSON format (no markdown, no other text):
+[
+    {{
+        "type": "mainstream",
+        "career": {{
+            "title": "Mainstream Specialization Title",
+            "description": "Inspiring description of this career avenue",
+            "reasoning": "Why this is a compelling mainstream specialization within the field"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
+                "duration": "e.g., 2 months",
+                "resources": [
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
+                ]
+            }}
+        ]
+    }},
+    {{
+        "type": "adjacent",
+        "career": {{
+            "title": "Adjacent Discipline Title",
+            "description": "Inspiring description of this adjacent path",
+            "reasoning": "Why this is a compelling adjacent avenue"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
+                "duration": "e.g., 2 months",
+                "resources": [
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
+                ]
+            }}
+        ]
+    }},
+    {{
+        "type": "wildcard",
+        "career": {{
+            "title": "Wildcard Pathway Title",
+            "description": "Inspiring description of this wildcard path",
+            "reasoning": "Why this is a compelling wildcard option"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
+                "duration": "e.g., 2 months",
+                "resources": [
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
+                ]
+            }}
+        ]
+    }}
+]
+""".strip()
+    else:
+        # Reflective assessment flow
+        return f"""
+You are a professional career counselor and guidance coach.
+Based on the following open-ended responses, suggest THREE distinct career avenues that match the user's natural curiosities, values, and energy drivers:
+1. "mainstream": The most conventional professional path or direct route that aligns with their stated interests/skills.
+2. "adjacent": A different discipline or industry that heavily leverages similar skills or traits.
+3. "wildcard": An emerging, future-oriented, or highly unconventional role that matches their implicit strengths but represents an unexpected direction.
+
+CRITICAL PATH DIVERGENCE RULE: The three paths MUST be completely different careers. Do not suggest career levels, seniority levels, or promotional tiers (e.g. Junior developer -> Senior developer) as different paths. They must represent parallel, divergent avenues.
+
+Any age, experience level, or background context provided: "{soft_context}"
+If a specific age or experience level is mentioned in the context above (e.g. 14 years old, junior, no experience), you MUST tailor the resources and the difficulty of the roadmap steps to be developmentally appropriate for that level. Otherwise, default to standard professional career steps.
+
+For each path, provide a highly detailed, step-by-step roadmap to explore and prepare for it.
+
+CRITICAL INSTRUCTION 1: Each roadmap must consist of at least 4-5 progressive milestones/steps. Map out a thorough journey from starting out with zero knowledge to professional mastery and job readiness.
+CRITICAL INSTRUCTION 2: Each step's description must be extremely detailed, concrete, and rich (at least 3-5 sentences long). Provide specific sub-tasks, methodologies, tools/libraries to learn, and concrete projects they should build.
+CRITICAL INSTRUCTION 3: For each step, provide 3-4 highly specific, real-world learning resources, official documentation links, books, or online courses. Avoid general descriptions.
 
 User Responses:
 {json.dumps(answers, indent=2)}
@@ -60,30 +149,59 @@ Return the output in the following STRICT JSON format (no markdown, no other tex
     {{
         "type": "mainstream",
         "career": {{
-            "title": "Career Title",
+            "title": "Mainstream Career Title",
             "description": "Inspiring description of the career",
             "reasoning": "Why this matches the user's profile"
         }},
         "roadmap": [
             {{
                 "title": "Detailed Step Title",
-                "description": "Detailed actionable instructions, concrete sub-tasks, libraries/methods, and projects to build.",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
                 "duration": "e.g., 2 months",
                 "resources": [
-                    "Free Code Camp - Responsive Web Design",
-                    "Official Python Documentation",
-                    "Udemy - Complete React Bootcamp"
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
                 ]
             }}
         ]
     }},
     {{
         "type": "adjacent",
-        ...
+        "career": {{
+            "title": "Adjacent Career Title",
+            "description": "Inspiring description of this adjacent career",
+            "reasoning": "Why this is a compelling adjacent avenue"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
+                "duration": "e.g., 2 months",
+                "resources": [
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
+                ]
+            }}
+        ]
     }},
     {{
         "type": "wildcard",
-        ...
+        "career": {{
+            "title": "Wildcard Career Title",
+            "description": "Inspiring description of this wildcard career",
+            "reasoning": "Why this is a compelling wildcard option"
+        }},
+        "roadmap": [
+            {{
+                "title": "Detailed Step Title",
+                "description": "Detailed actionable instructions, concrete sub-tasks, and projects to build.",
+                "duration": "e.g., 2 months",
+                "resources": [
+                    "Resource 1 Link/Name",
+                    "Resource 2 Link/Name"
+                ]
+            }}
+        ]
     }}
 ]
 """.strip()

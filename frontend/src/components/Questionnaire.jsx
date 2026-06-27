@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader } from 'lucide-react';
 
 const Questionnaire = () => {
     const [questions, setQuestions] = useState([]);
@@ -11,19 +10,59 @@ const Questionnaire = () => {
     const [answers, setAnswers] = useState({});
     const [currentAnswer, setCurrentAnswer] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [logs, setLogs] = useState([]);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
-        api.get('/api/questions/')
-            .then(res => {
-                setQuestions(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, []);
+        const customExplore = location.state?.customExplore;
+        if (customExplore) {
+            setQuestions([]);
+            setLoading(false);
+            handleSubmit({ custom_explore: customExplore });
+        } else {
+            api.get('/api/questions/')
+                .then(res => {
+                    setQuestions(res.data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error(err);
+                    setLoading(false);
+                });
+        }
+    }, [location.state]);
+
+    useEffect(() => {
+        if (!submitting) {
+            setLogs([]);
+            return;
+        }
+
+        const logMessages = [
+            "[INFO] Launching CareerSea Discovery Engine...",
+            "[INFO] Analyzing interest patterns...",
+            "[INFO] Formulating mainstream and adjacent pathways...",
+            "[INFO] Injecting wildcard possibilities...",
+            "[INFO] Curating top-tier learning resources...",
+            "[INFO] Polishing neubrutalist blueprints...",
+            "[SUCCESS] Roadmap compiled successfully!"
+        ];
+
+        let currentLogIndex = 0;
+        setLogs([logMessages[0]]);
+
+        const interval = setInterval(() => {
+            currentLogIndex++;
+            if (currentLogIndex < logMessages.length) {
+                setLogs(prev => [...prev, logMessages[currentLogIndex]]);
+            } else {
+                clearInterval(interval);
+            }
+        }, 1200);
+
+        return () => clearInterval(interval);
+    }, [submitting]);
 
     const handleNext = () => {
         if (!currentAnswer.trim()) return;
@@ -47,7 +86,6 @@ const Questionnaire = () => {
             navigate('/roadmap', { state: { data: res.data } });
         } catch (error) {
             console.error("Submission failed", error);
-            // 401 handling is done by the api interceptor
             alert("Failed to analyze. Please ensure the AI service is available and try again.");
             setSubmitting(false);
         }
@@ -61,22 +99,46 @@ const Questionnaire = () => {
 
     if (submitting) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                    className="mb-8 text-primary"
-                >
-                    <Loader size={80} strokeWidth={3} />
-                </motion.div>
-                <h2 className="pop-card text-2xl sm:text-3xl font-black uppercase tracking-tight py-4 px-8">
-                    ANALYZING YOUR FUTURE...
-                </h2>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-left px-4">
+                <div className="pop-card w-full max-w-[600px] bg-[#121212] text-[#00ff00] border-pop border-text shadow-pop p-6 font-mono rounded-pop select-none">
+                    {/* Console Header */}
+                    <div className="flex justify-between items-center border-b-2 border-[#333] pb-4 mb-4">
+                        <div className="flex gap-2">
+                            <span className="w-3 h-3 rounded-full bg-accent border border-text"></span>
+                            <span className="w-3 h-3 rounded-full bg-secondary border border-text"></span>
+                            <span className="w-3 h-3 rounded-full bg-primary border border-text"></span>
+                        </div>
+                        <span className="text-xs uppercase font-bold tracking-widest text-[#666]">discovery_console.log</span>
+                    </div>
+                    {/* Console Body */}
+                    <div className="flex flex-col gap-2 min-h-[180px] text-sm overflow-y-auto">
+                        <AnimatePresence>
+                            {logs.map((log, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className={log.includes("[SUCCESS]") ? "text-[#00ff00] font-black" : "text-[#888]"}
+                                >
+                                    {log}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                        {logs.length < 7 && (
+                            <motion.span 
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ repeat: Infinity, duration: 0.8 }}
+                                className="inline-block w-2 h-4 bg-[#888] mt-1"
+                            />
+                        )}
+                    </div>
+                </div>
             </div>
         );
     }
 
-    if (questions.length === 0) return <div className="text-center font-bold p-20">No questions found.</div>;
+    if (questions.length === 0 && !location.state?.customExplore) return <div className="text-center font-bold p-20">No questions found.</div>;
 
     const question = questions[currentIndex];
     const progress = ((currentIndex) / questions.length) * 100;

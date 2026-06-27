@@ -7,7 +7,14 @@ import { Calendar, ChevronRight, History, Ship } from 'lucide-react';
 const Dashboard = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+
+    const handleExplore = (e) => {
+        if (e) e.preventDefault();
+        if (!searchQuery.trim()) return;
+        navigate('/assessment', { state: { customExplore: searchQuery.trim() } });
+    };
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -44,6 +51,24 @@ const Dashboard = () => {
                 </div>
                 <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter">Your Sea Logs</h1>
             </div>
+
+            {/* Neubrutalist Direct Search Exploration Bar */}
+            <form onSubmit={handleExplore} className="w-full mb-12 flex border-pop border-text rounded-pop overflow-hidden bg-surface shadow-pop transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px]">
+                <input 
+                    type="text" 
+                    placeholder="Embark on a new exploration directly (e.g. Space Architect)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-grow px-5 py-4 bg-transparent font-bold text-lg outline-none placeholder:text-text-light"
+                />
+                <button 
+                    type="submit"
+                    disabled={!searchQuery.trim()}
+                    className="bg-primary hover:bg-primary-dark text-text border-l-4 border-text font-black px-8 uppercase tracking-wider text-sm transition-colors cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed"
+                >
+                    Explore
+                </button>
+            </form>
 
             {history.length === 0 ? (
                 <div className="pop-card text-center py-20">
