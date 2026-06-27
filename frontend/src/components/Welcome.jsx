@@ -74,34 +74,44 @@ const Welcome = () => {
                         Take Reflective Assessment
                     </motion.button>
                 </div>
-
-                {/* Neubrutalist Disclaimer Note */}
+                {/* Neubrutalist Disclaimer Note Popup Modal */}
                 <AnimatePresence>
                     {showDisclaimer && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 15 }}
-                            className="pop-card text-left bg-surface border-pop border-text shadow-pop p-6 relative max-w-[650px] mx-auto"
-                        >
-                            <button 
-                                onClick={handleDismiss} 
-                                className="absolute top-4 right-4 font-black text-xs uppercase hover:text-accent cursor-pointer border-2 border-text bg-bg px-2 py-1 shadow-pop-sm active:translate-x-[1px] active:translate-y-[1px]"
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 350 }}
+                                className="pop-card text-left bg-surface border-pop border-text shadow-pop p-8 relative w-full max-w-[600px] select-none"
                             >
-                                ✕ Close
-                            </button>
-                            <h3 className="text-lg font-black uppercase mb-3 flex items-center gap-2">
-                                <span>⚓</span> Charting Your Own Course
-                            </h3>
-                            <p className="text-sm font-bold text-text-light leading-relaxed mb-4">
-                                CareerSea is a compass, not a captain. Our engine uses AI to suggest pathways based on your inputs, but please keep a few things in mind:
-                            </p>
-                            <ul className="text-xs font-bold text-text-light list-disc pl-5 space-y-3">
-                                <li><strong>AI Limitations:</strong> AI models can be biased, might carry outdated info, and cannot capture the full nuance of newly emerging or highly localized roles.</li>
-                                <li><strong>Beyond a Screen:</strong> A career is a dynamic, lifelong voyage. It cannot be decided by an algorithm analyzing a few questions and answers.</li>
-                                <li><strong>Trust Your Judgment:</strong> Use these roadmaps as inspiration and starting points. Talk to real professionals, seek hands-on experience, and trust your own intuition above any platform.</li>
-                            </ul>
-                        </motion.div>
+                                <button 
+                                    onClick={handleDismiss} 
+                                    className="absolute top-4 right-4 font-black text-xs uppercase hover:text-accent cursor-pointer border-2 border-text bg-bg px-2 py-1 shadow-pop-sm active:translate-x-[1px] active:translate-y-[1px]"
+                                >
+                                    ✕ Close
+                                </button>
+                                <h3 className="text-xl font-black uppercase mb-4 flex items-center gap-2">
+                                    <span>⚓</span> Charting Your Own Course
+                                </h3>
+                                <p className="text-sm font-bold text-text-light leading-relaxed mb-4">
+                                    Welcome to CareerSea! We're here to help you explore. Before you set sail, please note:
+                                </p>
+                                <ul className="text-xs font-bold text-text-light list-disc pl-5 space-y-3 mb-6">
+                                    <li><strong>AI Limitations:</strong> AI models can be biased, might carry outdated info, and cannot capture the full nuance of newly emerging or highly localized roles.</li>
+                                    <li><strong>Beyond a Screen:</strong> A career is a dynamic, lifelong voyage. It cannot be decided by an algorithm analyzing a few questions and answers.</li>
+                                    <li><strong>Trust Your Judgment:</strong> Use these roadmaps as inspiration and starting points. Always talk to real professionals, seek hands-on experience, and trust your own intuition.</li>
+                                </ul>
+                                <div className="flex justify-end">
+                                    <button 
+                                        onClick={handleDismiss}
+                                        className="pop-button bg-primary text-sm px-6 py-3 cursor-pointer"
+                                    >
+                                        I Understand, Let's Go!
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
                     )}
                 </AnimatePresence>
             </motion.div>
