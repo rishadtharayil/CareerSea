@@ -21,6 +21,13 @@ OPENROUTER_MODEL   = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.0-flash
 
 AISTUDIO_API_KEY = os.environ.get("AISTUDIO_API_KEY")
 AISTUDIO_MODEL   = os.environ.get("AISTUDIO_MODEL", "gemini-3.1-flash-lite")
+def _extract_age_group(user_answers: dict) -> str:
+    if not user_answers:
+        return "Not specified"
+    for key, value in user_answers.items():
+        if "age" in key.lower():
+            return value
+    return "Not specified"
 
 
 # ---------------------------------------------------------------------------
@@ -28,14 +35,19 @@ AISTUDIO_MODEL   = os.environ.get("AISTUDIO_MODEL", "gemini-3.1-flash-lite")
 # ---------------------------------------------------------------------------
 
 def _build_prompt(answers: dict) -> str:
+    age_group = _extract_age_group(answers)
     return f"""
-You are a career counselor. Based on the following user responses, suggest THREE distinct career avenues:
+You are a professional youth career counselor and guidance coach. Based on the following user responses, suggest THREE distinct career avenues for a child/teenager in the age group of "{age_group}":
 1. "mainstream" (direct match to their skills/interests)
 2. "adjacent" (a pivot leveraging their transferable skills)
 3. "wildcard" (a bold, unexpected path based on their implicit traits)
 
-For each path, provide a highly detailed, step-by-step roadmap to achieve it.
-CRITICAL INSTRUCTION 1: Analyze their current background (education, current job) and SKIP roadmap steps they have already mastered. Tailor the guide strictly to their current level.
+For each path, provide a highly detailed, step-by-step roadmap to explore and prepare for it.
+
+CRITICAL INSTRUCTION 1: You MUST tailor the entire roadmap and its steps to the user's developmental age group: "{age_group}".
+- For Elementary/Middle Schoolers (8-14 years old): Do not suggest college degrees, high-stakes internships, or professional jobs as early steps. Instead, recommend fun, age-appropriate exploration and foundation building (e.g. learning Scratch/block-coding for tech, building Lego Mindstorms, joining school clubs, reading youth-oriented books, visiting science museums, drawing, writing creative stories). Keep the steps highly active, encouraging, and focused on learning through play and introductory skills.
+- For High Schoolers (15-18 years old): Suggest high school classes to take, introductory online courses (e.g. Coursera, Udemy, freeCodeCamp, Khan Academy), building git portfolios, joining speech/debate, local volunteering, coding simple projects, and looking for early internships or preparing for university major selection.
+
 CRITICAL INSTRUCTION 2: Each roadmap must consist of at least 4-5 progressive milestones/steps. Do not truncate the roadmap to just 1 or 2 steps; even if they have some prior knowledge, map out a thorough journey from where they are today to professional mastery and job readiness.
 CRITICAL INSTRUCTION 3: Each step's description must be extremely detailed, concrete, and rich (at least 3-5 sentences long). Provide specific sub-tasks, methodologies, tools/libraries to learn, and concrete projects they should build to prove their competence.
 CRITICAL INSTRUCTION 4: For each step, provide 3-4 highly specific, real-world learning resources, official documentation links, books, or online courses. Avoid general descriptions like "tutorials" or "online resources".
@@ -226,27 +238,28 @@ def get_career_suggestion(answers: dict) -> list:
         )
 
 
-def _build_deep_dive_prompt(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+def _build_deep_dive_prompt(career_title: str, step_title: str, step_description: str, duration: str, resources: list, user_answers: dict = None) -> str:
     resources_str = ", ".join(resources) if resources else "None provided"
+    age_group = _extract_age_group(user_answers)
     return f"""
-You are a senior mentor and career coach in the field of "{career_title}".
-Provide a highly detailed, comprehensive study guide for this specific roadmap step:
+You are a supportive senior mentor and youth career coach in the field of "{career_title}".
+You are helping a student in the age group of "{age_group}" master this specific roadmap step:
 Step Title: {step_title}
 Description: {step_description}
 Estimated Duration: {duration}
 Key Resources: {resources_str}
 
-Your guide should be structured, practical, and motivating. Write in clean Markdown format. You must cover the following sections:
-1.  **Core Concepts to Master**: Break down this step into 3-4 essential technical concepts or skills the user must learn. Explain what each is and why it's important.
+Your guide should be structured, practical, and highly motivating, written in an encouraging, inspiring, and age-appropriate tone. Write in clean Markdown format. You must cover the following sections:
+1.  **Core Concepts to Master**: Break down this step into 3-4 essential technical concepts or skills the user must learn. Explain what each is and why it's important. Ensure the level of depth is appropriate for "{age_group}".
 2.  **Weekly Study Plan / Milestones**: Suggest a timeline or progressive milestones (e.g., Week 1-2, Week 3-4, etc.) to cover this step within the {duration} timeframe.
-3.  **Hands-on Project to Build**: Propose one specific, concrete mini-project the user should build to prove they have mastered this step. Give it a title, a brief description, and a list of key features.
-4.  **Advanced Resources & Communities**: Suggest 2-3 additional real-world learning materials, documentation links, or communities (like Discord channels, subreddits, or forums) where they can get help.
+3.  **Hands-on Project to Build**: Propose one specific, concrete mini-project the user should build to prove they have mastered this step. Make sure the project scale and difficulty fit the "{age_group}" category (e.g., simpler, visual, or play-based projects for younger kids; more advanced, structured projects for older teens). Give it a title, a brief description, and a list of key features.
+4.  **Advanced Resources & Communities**: Suggest 2-3 additional age-appropriate learning materials, documentation links, or communities where they can get help.
 
 Write in a direct, encouraging, Neubrutalist-adjacent style (bold headings, no fluff, extremely actionable).
 """.strip()
 
 
-def _get_step_deep_dive_vertex(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+def _get_step_deep_dive_vertex(career_title: str, step_title: str, step_description: str, duration: str, resources: list, user_answers: dict = None) -> str:
     try:
         import vertexai
         from vertexai.generative_models import GenerativeModel
@@ -259,7 +272,7 @@ def _get_step_deep_dive_vertex(career_title: str, step_title: str, step_descript
         system_instruction="You are a helpful and inspiring senior mentor.",
     )
 
-    prompt = _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)
+    prompt = _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources, user_answers)
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -268,7 +281,7 @@ def _get_step_deep_dive_vertex(career_title: str, step_title: str, step_descript
         raise e
 
 
-def _get_step_deep_dive_openrouter(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+def _get_step_deep_dive_openrouter(career_title: str, step_title: str, step_description: str, duration: str, resources: list, user_answers: dict = None) -> str:
     import requests
 
     if not OPENROUTER_API_KEY:
@@ -286,7 +299,7 @@ def _get_step_deep_dive_openrouter(career_title: str, step_title: str, step_desc
         "model": OPENROUTER_MODEL,
         "messages": [
             {"role": "system", "content": "You are a helpful and inspiring senior mentor."},
-            {"role": "user",   "content": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)},
+            {"role": "user",   "content": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources, user_answers)},
         ],
     }
 
@@ -305,7 +318,7 @@ def _get_step_deep_dive_openrouter(career_title: str, step_title: str, step_desc
         raise e
 
 
-def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_description: str, duration: str, resources: list, user_answers: dict = None) -> str:
     import requests
 
     if not AISTUDIO_API_KEY:
@@ -321,7 +334,7 @@ def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_descri
             "parts": [{"text": "You are a helpful and inspiring senior mentor."}]
         },
         "contents": [
-            {"role": "user", "parts": [{"text": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources)}]}
+            {"role": "user", "parts": [{"text": _build_deep_dive_prompt(career_title, step_title, step_description, duration, resources, user_answers)}]}
         ],
         "generationConfig": {
             "temperature": 0.7
@@ -338,15 +351,15 @@ def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_descri
         raise e
 
 
-def get_step_deep_dive(career_title: str, step_title: str, step_description: str, duration: str, resources: list) -> str:
+def get_step_deep_dive(career_title: str, step_title: str, step_description: str, duration: str, resources: list, user_answers: dict = None) -> str:
     logger.info("AI provider for deep dive: %s", AI_PROVIDER)
 
     if AI_PROVIDER == "vertex":
-        return _get_step_deep_dive_vertex(career_title, step_title, step_description, duration, resources)
+        return _get_step_deep_dive_vertex(career_title, step_title, step_description, duration, resources, user_answers)
     elif AI_PROVIDER == "openrouter":
-        return _get_step_deep_dive_openrouter(career_title, step_title, step_description, duration, resources)
+        return _get_step_deep_dive_openrouter(career_title, step_title, step_description, duration, resources, user_answers)
     elif AI_PROVIDER == "aistudio":
-        return _get_step_deep_dive_aistudio(career_title, step_title, step_description, duration, resources)
+        return _get_step_deep_dive_aistudio(career_title, step_title, step_description, duration, resources, user_answers)
     else:
         raise Exception(
             f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "
@@ -354,15 +367,16 @@ def get_step_deep_dive(career_title: str, step_title: str, step_description: str
         )
 
 
-def _build_chat_prompt(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+def _build_chat_prompt(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str, user_answers: dict = None) -> str:
     history_str = ""
     for msg in chat_history:
         role = "Student" if msg.sender == "user" else "AI Mentor"
         history_str += f"{role}: {msg.text}\n"
 
+    age_group = _extract_age_group(user_answers)
     return f"""
-You are a senior mentor and career coach in the field of "{career_title}".
-You are helping a student master this roadmap step:
+You are an encouraging, supportive senior mentor and youth career coach in the field of "{career_title}".
+You are helping a student who is in the age group of "{age_group}" master this roadmap step:
 Step Title: {step_title}
 Step Description: {step_description}
 
@@ -373,11 +387,11 @@ Below is the chat history of your conversation so far:
 {history_str}
 Student: {new_message}
 
-Provide a helpful, direct, and highly actionable response to the student's message. Stay strictly in character as an inspiring, supportive senior mentor. Write in clean Markdown format. Keep your response concise (1-3 paragraphs) and focused, providing code snippets or library names if requested. Avoid generic filler.
+Provide a helpful, direct, encouraging, and age-appropriate response to the student's message. Stay strictly in character as an inspiring, supportive mentor. Keep your vocabulary, examples, and tone perfectly suited for a student in the "{age_group}" age group (e.g., more visual/intuitive explanations for younger kids, more structured/detailed technical terms for high schoolers). Write in clean Markdown format. Keep your response concise (1-3 paragraphs) and focused, providing simple code snippets, visual analogies, or library names if requested. Avoid generic filler.
 """.strip()
 
 
-def _get_step_chat_vertex(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+def _get_step_chat_vertex(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str, user_answers: dict = None) -> str:
     try:
         import vertexai
         from vertexai.generative_models import GenerativeModel
@@ -390,7 +404,7 @@ def _get_step_chat_vertex(career_title: str, step_title: str, step_description: 
         system_instruction="You are a helpful and inspiring senior mentor.",
     )
 
-    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -399,7 +413,7 @@ def _get_step_chat_vertex(career_title: str, step_title: str, step_description: 
         raise e
 
 
-def _get_step_chat_openrouter(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+def _get_step_chat_openrouter(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str, user_answers: dict = None) -> str:
     import requests
 
     if not OPENROUTER_API_KEY:
@@ -413,7 +427,7 @@ def _get_step_chat_openrouter(career_title: str, step_title: str, step_descripti
         "X-Title": "CareerSea",
     }
 
-    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
 
     data = {
         "model": OPENROUTER_MODEL,
@@ -438,7 +452,7 @@ def _get_step_chat_openrouter(career_title: str, step_title: str, step_descripti
         raise e
 
 
-def _get_step_chat_aistudio(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+def _get_step_chat_aistudio(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str, user_answers: dict = None) -> str:
     import requests
 
     if not AISTUDIO_API_KEY:
@@ -449,7 +463,7 @@ def _get_step_chat_aistudio(career_title: str, step_title: str, step_description
     
     headers = {"Content-Type": "application/json"}
     
-    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+    prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     
     data = {
         "system_instruction": {
@@ -473,15 +487,15 @@ def _get_step_chat_aistudio(career_title: str, step_title: str, step_description
         raise e
 
 
-def get_step_chat(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str) -> str:
+def get_step_chat(career_title: str, step_title: str, step_description: str, deep_dive: str, chat_history: list, new_message: str, user_answers: dict = None) -> str:
     logger.info("AI provider for step chat: %s", AI_PROVIDER)
 
     if AI_PROVIDER == "vertex":
-        return _get_step_chat_vertex(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+        return _get_step_chat_vertex(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     elif AI_PROVIDER == "openrouter":
-        return _get_step_chat_openrouter(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+        return _get_step_chat_openrouter(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     elif AI_PROVIDER == "aistudio":
-        return _get_step_chat_aistudio(career_title, step_title, step_description, deep_dive, chat_history, new_message)
+        return _get_step_chat_aistudio(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     else:
         raise Exception(
             f"Unknown AI_PROVIDER '{AI_PROVIDER}'. "

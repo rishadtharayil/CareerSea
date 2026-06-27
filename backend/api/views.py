@@ -108,7 +108,8 @@ class RoadmapStepDetailView(APIView):
                     step_title=step.title,
                     step_description=step.description,
                     duration=step.duration,
-                    resources=step.resources
+                    resources=step.resources,
+                    user_answers=step.career.user_response.answers
                 )
                 step.deep_dive = deep_dive_content
                 step.save()
@@ -146,7 +147,8 @@ class RoadmapStepChatView(APIView):
                 step_description=step.description,
                 deep_dive=step.deep_dive or "No study guide available.",
                 chat_history=history,
-                new_message=user_text
+                new_message=user_text,
+                user_answers=step.career.user_response.answers
             )
 
             # 3. Save both user message and AI response
