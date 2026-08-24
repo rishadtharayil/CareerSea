@@ -2,7 +2,7 @@
 
 **Stop guessing, start sailing.** CareerSea is a professional-grade, AI-powered career guidance platform that generates hyper-personalized roadmaps based on your unique interests, values, and problem-solving style.
 
-🔗 **Live Demo:** [https://careersea.in](https://careersea.in)
+~~🔗 **Live Demo:** [https://careersea.in](https://careersea.in)~~
 
 ---
 
