@@ -1,4 +1,6 @@
-# 🌊 CareerSea | AI Career Navigator
+This project is not live anymore. GCP trial is over 🫠
+
+# CareerSea | AI Career Navigator
 
 **Stop guessing, start sailing.** CareerSea is a professional-grade, AI-powered career guidance platform that generates hyper-personalized roadmaps based on your unique interests, values, and problem-solving style.
 
