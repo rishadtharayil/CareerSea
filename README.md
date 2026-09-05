@@ -29,43 +29,48 @@ This project is not live anymore. GCP trial is over 🫠
 
 ### Frontend
 - **Framework:** React 19 (Vite)
-- **Styling:** Tailwind CSS (Modern Utility-First)
+- **Styling:** Tailwind CSS (Neubrutalism design)
 - **Animations:** Framer Motion
 - **Icons:** Lucide-React
 - **Routing:** React Router 7
+- **Hosting:** Cloudflare Pages (Global Edge CDN)
 
-### Backend
-- **Framework:** Django 6.0
-- **API:** Django REST Framework
-- **Auth:** Simple JWT
-- **Database:** PostgreSQL (Production) / SQLite (Dev)
-- **AI (Primary):** Google Vertex AI — Gemini 2.0 Flash via `google-cloud-aiplatform` SDK
-- **AI (Fallback):** OpenRouter API — toggle with `AI_PROVIDER=openrouter` env var
-- **Static Files:** WhiteNoise
+### Backend (Edge Worker)
+- **Runtime:** Cloudflare Workers (V8 Isolate)
+- **Framework:** Hono (TypeScript)
+- **Auth:** PBKDF2-SHA256 (Django compatible) + HS256 JWT
+- **Database:** PostgreSQL (Managed by Supabase via PostgREST HTTPS Client)
+- **AI (Primary):** Google AI Studio — Gemini 3.1 Flash Lite
+- **AI (Fallback):** OpenRouter API (`google/gemini-2.0-flash-001`)
 
-### Infrastructure
-- **Platform:** Google Cloud (GCP)
-- **Compute:** Cloud Run (Serverless Containers)
-- **Storage:** Supabase PostgreSQL & Artifact Registry
-- **Security:** Secret Manager & Workload Identity Federation
-- **CI/CD:** GitHub Actions
+### Infrastructure & CI/CD
+- **Edge Compute:** Cloudflare Workers (`careersea-api`)
+- **Frontend Hosting:** Cloudflare Pages (`careersea-frontend`)
+- **DNS & SSL:** Cloudflare Edge DNS (`careersea.in` & `api.careersea.in`)
+- **Database:** Supabase PostgreSQL
+- **CI/CD:** GitHub Actions via Cloudflare Wrangler Action
 
 ---
 
 ## 🏗️ Project Structure
 
 ```text
-├── .github/workflows/  # Automated deployment pipelines
-├── backend/            # Django API Service
-│   ├── api/            # App logic, models, and views
-│   ├── core/           # Project configuration
-│   └── Dockerfile      # Production container config
-├── frontend/           # React Web Application
+├── .github/workflows/
+│   ├── deploy-cloudflare.yml # Automated deployment to Cloudflare
+│   └── deploy.yml            # Legacy Cloud Run deployment
+├── frontend/                 # React 19 + Vite SPA (Cloudflare Pages)
+│   ├── public/_redirects     # SPA routing configuration
+│   └── src/                  # React UI components and pages
+├── worker/                   # TypeScript + Hono API (Cloudflare Worker)
 │   ├── src/
-│   │   ├── api.js      # Centralized axios client w/ JWT refresh interceptor
-│   │   ├── components/ # Reusable UI components
-│   │   └── pages/      # Route-level page components
-│   └── Dockerfile      # Multi-stage production build
+│   │   ├── routes/           # Auth, Questions, Assessment, Steps, History
+│   │   ├── services/         # Supabase client, PBKDF2 auth, Gemini AI
+│   │   ├── types.ts          # Type definitions
+│   │   └── index.ts          # Central Hono application
+│   └── wrangler.jsonc        # Cloudflare Worker configuration
+├── backend/                  # Legacy Django application
+├── CLOUDFLARE_SETUP_GUIDE.md # Complete step-by-step setup guide
+├── ARCHITECTURE.md           # System architecture overview
 └── README.md
 ```
 
@@ -73,18 +78,14 @@ This project is not live anymore. GCP trial is over 🫠
 
 ## 🚀 Local Development
 
-### 1. Backend Setup
+### 1. Backend Worker Setup
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# .\venv\Scripts\activate  # Windows
-
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+cd worker
+npm install
+# Create worker/.dev.vars with your API keys (see CLOUDFLARE_SETUP_GUIDE.md)
+npm run dev
 ```
-*Note: Ensure you have an `.env` file with `OPENROUTER_API_KEY`.*
+The Worker runs locally at `http://localhost:8787`.
 
 ### 2. Frontend Setup
 ```bash
@@ -92,18 +93,19 @@ cd frontend
 npm install
 npm run dev
 ```
+The Frontend runs locally at `http://localhost:5173`.
 
 ---
 
 ## 🚢 Deployment
 
-This project is configured for **Zero-Touch Deployment**. 
+Deployment is fully automated with **GitHub Actions**:
 
-Any push to the `main` branch triggers a GitHub Action that:
-1. Authenticates with GCP via Workload Identity Federation (Keyless).
-2. Builds optimized Docker containers for both services.
-3. Deploys them to Cloud Run.
-4. Handles database migrations and static file collection automatically.
+Any push to the `main` branch triggers `.github/workflows/deploy-cloudflare.yml` which:
+1. Builds and publishes the Backend Worker to Cloudflare's global edge network via Wrangler.
+2. Builds the React SPA (`npm run build`) and deploys the static bundle to Cloudflare Pages.
+
+For manual deployment or initial configuration, follow the [Cloudflare Setup Guide](CLOUDFLARE_SETUP_GUIDE.md).
 
 ---
 
