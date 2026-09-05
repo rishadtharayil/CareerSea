@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 const Questionnaire = () => {
     const [questions, setQuestions] = useState([]);
@@ -13,6 +14,18 @@ const Questionnaire = () => {
     const [logs, setLogs] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const handleSubmit = useCallback(async (finalAnswers) => {
+        setSubmitting(true);
+        try {
+            const res = await api.post('/api/submit/', { answers: finalAnswers });
+            navigate('/roadmap', { state: { data: res.data } });
+        } catch (error) {
+            console.error("Submission failed", error);
+            alert("Failed to analyze. Please ensure the AI service is available and try again.");
+            setSubmitting(false);
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const customExplore = location.state?.customExplore;
@@ -31,7 +44,7 @@ const Questionnaire = () => {
                     setLoading(false);
                 });
         }
-    }, [location.state]);
+    }, [location.state, handleSubmit]);
 
     useEffect(() => {
         if (!submitting) {
@@ -79,18 +92,6 @@ const Questionnaire = () => {
         }
     };
 
-    const handleSubmit = async (finalAnswers) => {
-        setSubmitting(true);
-        try {
-            const res = await api.post('/api/submit/', { answers: finalAnswers });
-            navigate('/roadmap', { state: { data: res.data } });
-        } catch (error) {
-            console.error("Submission failed", error);
-            alert("Failed to analyze. Please ensure the AI service is available and try again.");
-            setSubmitting(false);
-        }
-    };
-
     if (loading) return (
         <div className="flex justify-center items-center h-[50vh] font-black text-2xl tracking-widest animate-pulse">
             LOADING...
@@ -114,7 +115,7 @@ const Questionnaire = () => {
                     <div className="flex flex-col gap-2 min-h-[180px] text-sm overflow-y-auto">
                         <AnimatePresence>
                             {logs.map((log, index) => (
-                                <motion.div
+                                <Motion.div
                                     key={index}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -122,11 +123,11 @@ const Questionnaire = () => {
                                     className={log.includes("[SUCCESS]") ? "text-[#00ff00] font-black" : "text-[#888]"}
                                 >
                                     {log}
-                                </motion.div>
+                                </Motion.div>
                             ))}
                         </AnimatePresence>
                         {logs.length < 7 && (
-                            <motion.span 
+                            <Motion.span
                                 animate={{ opacity: [0, 1, 0] }}
                                 transition={{ repeat: Infinity, duration: 0.8 }}
                                 className="inline-block w-2 h-4 bg-[#888] mt-1"
@@ -147,7 +148,7 @@ const Questionnaire = () => {
         <div className="max-w-[800px] mx-auto w-full px-4 py-8">
             {/* Progress Bar */}
             <div className="w-full h-4 border-pop border-text rounded-full mb-12 bg-surface overflow-hidden relative">
-                <motion.div
+                <Motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     className="h-full bg-secondary"
@@ -155,7 +156,7 @@ const Questionnaire = () => {
             </div>
 
             <AnimatePresence mode='wait'>
-                <motion.div
+                <Motion.div
                     key={currentIndex}
                     initial={{ x: 20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -205,7 +206,7 @@ const Questionnaire = () => {
                             {currentIndex === questions.length - 1 ? 'Finish' : 'Next Step'}
                         </button>
                     </div>
-                </motion.div>
+                </Motion.div>
             </AnimatePresence>
         </div>
     );

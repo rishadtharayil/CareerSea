@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Clock, BookOpen, Home, CheckCircle, Sparkles } from 'lucide-react';
 
 const Roadmap = () => {
@@ -45,19 +45,19 @@ const Roadmap = () => {
 
             {/* Header Section */}
             <div className="text-center mb-20 pt-8">
-                <motion.div
+                <Motion.div
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     className="inline-block bg-tertiary border-pop border-text px-6 py-2 mb-8 font-black text-lg -rotate-2 shadow-pop"
                 >
                     RECOMMENDED CAREER
-                </motion.div>
+                </Motion.div>
 
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-12 uppercase leading-none tracking-tighter">
                     {suggestion.title}
                 </h1>
 
-                <motion.div
+                <Motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2 }}
@@ -70,7 +70,7 @@ const Roadmap = () => {
                         <span className="block text-xs uppercase mb-2 tracking-[0.2em] opacity-60">Why this fits you:</span>
                         {suggestion.reasoning}
                     </div>
-                </motion.div>
+                </Motion.div>
             </div>
 
             {/* Roadmap Visualization */}
@@ -86,7 +86,7 @@ const Roadmap = () => {
 
                 <div className="grid gap-12 md:gap-24 relative z-10">
                     {suggestion.roadmap_steps.map((step, index) => (
-                        <motion.div
+                        <Motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-100px" }}
@@ -141,18 +141,18 @@ const Roadmap = () => {
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     ))}
                 </div>
 
                 {/* Finish Line */}
                 <div className="relative z-20 flex justify-center mt-24">
-                    <motion.div 
+                    <Motion.div
                         whileInView={{ scale: [1, 1.1, 1] }}
                         className="bg-secondary border-pop border-text px-8 py-4 sm:text-2xl font-black shadow-pop-hover flex items-center gap-4 uppercase tracking-tighter"
                     >
                         <CheckCircle size={32} strokeWidth={3} /> Goal Achieved
-                    </motion.div>
+                    </Motion.div>
                 </div>
             </div>
 

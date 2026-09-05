@@ -266,11 +266,11 @@ async function callAIStudio(
   model = 'gemini-3.1-flash-lite',
   systemInstruction = 'You are a helpful and inspiring career coach.'
 ): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       system_instruction: {
         parts: [{ text: systemInstruction }],
@@ -288,8 +288,8 @@ async function callAIStudio(
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`Google AI Studio API error (${res.status}): ${errorBody}`);
+    console.error('Google AI Studio request failed:', res.status);
+    throw new Error('AI provider request failed.');
   }
 
   const data: any = await res.json();
@@ -323,8 +323,8 @@ async function callOpenRouter(
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`OpenRouter API error (${res.status}): ${errorBody}`);
+    console.error('OpenRouter request failed:', res.status);
+    throw new Error('AI provider request failed.');
   }
 
   const data: any = await res.json();

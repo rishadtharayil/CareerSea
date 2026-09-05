@@ -4,12 +4,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.careersea
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true,
 });
+
+// Refresh tokens are HttpOnly cookies; remove any legacy browser copy.
+localStorage.removeItem('refresh_token');
 
 // Attach the access token to every outgoing request automatically
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token');
+        const token = sessionStorage.getItem('access_token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -39,16 +43,6 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
-            const refreshToken = localStorage.getItem('refresh_token');
-
-            // No refresh token available — log out immediately
-            if (!refreshToken) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                window.location.href = '/login';
-                return Promise.reject(error);
-            }
-
             if (isRefreshing) {
                 // Queue the request until the refresh completes
                 return new Promise((resolve, reject) => {
@@ -65,12 +59,10 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const response = await axios.post(`${API_BASE_URL}/api/token/refresh/`, {
-                    refresh: refreshToken,
-                });
+                const response = await axios.post(`${API_BASE_URL}/api/token/refresh/`, {}, { withCredentials: true });
 
                 const newAccessToken = response.data.access;
-                localStorage.setItem('access_token', newAccessToken);
+                sessionStorage.setItem('access_token', newAccessToken);
 
                 // Update the default header and retry queued requests
                 api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
@@ -80,8 +72,7 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
+                sessionStorage.removeItem('access_token');
                 window.location.href = '/login';
                 return Promise.reject(refreshError);
             } finally {

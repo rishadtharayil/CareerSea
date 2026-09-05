@@ -1,8 +1,12 @@
 import { Hono } from 'hono';
 import { Env } from '../types';
 import { getSupabase } from '../services/db';
+import { timingSafeEqual } from '../services/auth';
+import { rateLimit } from '../services/rateLimit';
 
 const seed = new Hono<{ Bindings: Env }>();
+
+seed.use('*', rateLimit(3, 60_000));
 
 const defaultQuestions = [
   {
@@ -32,6 +36,12 @@ const defaultQuestions = [
  * Seeds initial assessment questions if not already present
  */
 seed.post('/', async (c) => {
+  const configuredSecret = c.env.SEED_SECRET;
+  const providedSecret = c.req.header('X-Seed-Secret');
+  if (!configuredSecret || !providedSecret || !timingSafeEqual(configuredSecret, providedSecret)) {
+    return c.json({ error: 'Not found.' }, 404);
+  }
+
   const supabase = getSupabase(c.env);
 
   const { data: existing } = await supabase
@@ -49,7 +59,7 @@ seed.post('/', async (c) => {
 
   if (error) {
     console.error('Error seeding questions:', error);
-    return c.json({ error: 'Failed to seed questions' }, 500);
+    return c.json({ error: 'Failed to seed questions.' }, 500);
   }
 
   return c.json({ message: 'Successfully seeded questions.', questions: inserted }, 201);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Calendar, ChevronRight, History, Ship } from 'lucide-react';
 
 const Dashboard = () => {
@@ -80,7 +80,7 @@ const Dashboard = () => {
             ) : (
                 <div className="grid gap-6">
                     {history.map((assessment, index) => (
-                        <motion.div
+                        <Motion.div
                             key={assessment.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -107,7 +107,7 @@ const Dashboard = () => {
                             <div className="bg-surface border-2 border-text p-2 group-hover:bg-primary transition-colors">
                                 <ChevronRight size={24} />
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     ))}
                 </div>
             )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 const Welcome = () => {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Welcome = () => {
 
     return (
         <div className="flex flex-col items-center justify-center text-center min-h-[75vh] px-4 py-8">
-            <motion.div
+            <Motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
@@ -65,20 +66,20 @@ const Welcome = () => {
                 {/* Alternative Assessment Entry */}
                 <div className="flex flex-col items-center gap-2 mb-12">
                     <span className="text-xs font-black uppercase tracking-widest text-text-light">Or find your path from scratch</span>
-                    <motion.button
+                    <Motion.button
                         className="pop-button text-xl px-8 py-4 bg-secondary"
                         onClick={() => navigate('/assessment')}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
                         Take Reflective Assessment
-                    </motion.button>
+                    </Motion.button>
                 </div>
                 {/* Neubrutalist Disclaimer Note Popup Modal */}
                 <AnimatePresence>
                     {showDisclaimer && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                            <motion.div
+                            <Motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -110,11 +111,11 @@ const Welcome = () => {
                                         I Understand, Let's Go!
                                     </button>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         </div>
                     )}
                 </AnimatePresence>
-            </motion.div>
+            </Motion.div>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Env, UserResponse, CareerSuggestion, RoadmapStep } from '../types';
 import { getSupabase } from '../services/db';
-import { verifyToken } from '../services/auth';
+import { authenticateAccessToken, getJwtSecret } from '../services/auth';
 
 const history = new Hono<{ Bindings: Env }>();
 
@@ -15,21 +15,19 @@ history.get('/', async (c) => {
     return c.json({ detail: 'Authentication credentials were not provided.' }, 401);
   }
 
-  const token = authHeader.substring(7);
-  const jwtSecret = c.env.JWT_SECRET || 'careersea-default-jwt-secret';
-  const payload = await verifyToken(token, jwtSecret);
+  const supabase = getSupabase(c.env);
+  const userId = await authenticateAccessToken(authHeader, getJwtSecret(c.env.JWT_SECRET), supabase);
 
-  if (!payload || payload.token_type !== 'access') {
+  if (!userId) {
     return c.json({ detail: 'Given token not valid for any token type', code: 'token_not_valid' }, 401);
   }
-
-  const supabase = getSupabase(c.env);
 
   // Fetch all user responses for this user
   const { data: responses, error: respErr } = await supabase
     .from('api_userresponse')
     .select('id, answers, created_at')
-    .eq('user_id', payload.user_id)
+    .eq('user_id', userId)
+    .range(0, 49)
     .order('created_at', { ascending: false });
 
   if (respErr) {

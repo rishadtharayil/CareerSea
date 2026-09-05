@@ -8,14 +8,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import StepDetail from './pages/StepDetail';
+import api from './api';
 
 function App() {
   const location = useLocation();
-  const isAuthenticated = !!localStorage.getItem('access_token');
+  const isAuthenticated = !!sessionStorage.getItem('access_token');
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('access_token');
+    api.post('/api/token/logout/').catch(() => {});
     window.location.href = '/';
   };
 

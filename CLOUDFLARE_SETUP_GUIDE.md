@@ -65,10 +65,11 @@ Because the Worker runs in a secure, serverless edge environment, it communicate
 
 ## Step 3: Configure Cloudflare Worker Secrets
 
-Your Cloudflare Worker requires 4 secrets:
+Your Cloudflare Worker requires these secrets:
 - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role secret from Step 2.
 - `AISTUDIO_API_KEY`: Your Google AI Studio API key.
 - `JWT_SECRET`: A secure random string used to sign and verify JWT authentication tokens.
+- `SEED_SECRET`: A separate one-time setup secret for the protected seed endpoint.
 - `OPENROUTER_API_KEY`: *(Optional)* If using `AI_PROVIDER=openrouter`.
 
 ### Option A: Set Secrets via Wrangler CLI (Recommended)
@@ -89,7 +90,11 @@ npx wrangler secret put AISTUDIO_API_KEY
 npx wrangler secret put JWT_SECRET
 # When prompted, paste your secure string
 
-# 4. (Optional) OpenRouter API Key if you use OpenRouter
+# 4. Seed endpoint secret (used only during initial setup)
+npx wrangler secret put SEED_SECRET
+# When prompted, paste a separate secure random string
+
+# 5. (Optional) OpenRouter API Key if you use OpenRouter
 npx wrangler secret put OPENROUTER_API_KEY
 ```
 
@@ -181,7 +186,7 @@ curl https://api.careersea.in/api/health/
 ### 7.2 Seed Initial Questions (If Needed)
 If you are deploying on a fresh database without questions:
 ```bash
-curl -X POST https://api.careersea.in/api/seed/
+curl -X POST -H "X-Seed-Secret: YOUR_SEED_SECRET" https://api.careersea.in/api/seed/
 # Expected response: {"message":"Successfully seeded questions.", ...}
 ```
 

@@ -14,22 +14,20 @@ const app = new Hono<{ Bindings: Env }>();
 // Logger
 app.use('*', logger());
 
-// CORS configuration matching existing CareerSea security settings
+// Only exact, controlled origins are allowed to make browser requests.
+const allowedOrigins = new Set([
+  'https://careersea.in',
+  'https://www.careersea.in',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]);
+
+// CORS configuration
 app.use(
   '*',
   cors({
     origin: (origin) => {
-      // Allow production domains and local development
-      if (
-        !origin ||
-        origin.endsWith('careersea.in') ||
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.endsWith('.pages.dev')
-      ) {
-        return origin || '*';
-      }
-      return 'https://careersea.in';
+      return allowedOrigins.has(origin) ? origin : 'https://careersea.in';
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -38,6 +36,15 @@ app.use(
     credentials: true,
   })
 );
+
+app.use('*', async (c, next) => {
+  await next();
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('Referrer-Policy', 'no-referrer');
+  c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+});
 
 // Health check endpoint
 app.get('/', (c) => {
@@ -83,7 +90,6 @@ app.onError((err, c) => {
   return c.json(
     {
       error: 'Internal Server Error',
-      message: err.message || 'An unexpected error occurred.',
     },
     500
   );

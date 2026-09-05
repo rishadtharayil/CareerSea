@@ -1,4 +1,6 @@
 import { sign, verify } from 'hono/jwt';
+import type { Context } from 'hono';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { JWTPayload } from '../types';
 
 /**
@@ -16,7 +18,7 @@ function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
 /**
  * Constant-time comparison between two strings
  */
-function timingSafeEqual(a: string, b: string): boolean {
+export function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) {
     return false;
   }
@@ -95,12 +97,92 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   const salt = parts[2];
   const expectedHash = parts[3];
 
-  if (isNaN(iterations) || !salt || !expectedHash) {
+  // Reject malformed or unexpectedly expensive hashes before deriving bits.
+  if (!Number.isInteger(iterations) || iterations < 1 || iterations > 2000000 || !salt || !expectedHash) {
     return false;
   }
 
   const computedHash = await derivePbkdf2Sha256(password, salt, iterations);
   return timingSafeEqual(computedHash, expectedHash);
+}
+
+/**
+ * Secrets must be supplied by the runtime. Never fall back to a public value.
+ */
+export function getJwtSecret(secret: string | undefined): string {
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured.');
+  }
+  return secret;
+}
+
+export function getCookie(cookieHeader: string | undefined, name: string): string | null {
+  if (!cookieHeader) return null;
+  for (const part of cookieHeader.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0) continue;
+    const key = part.slice(0, separator).trim();
+    if (key === name) {
+      try {
+        return decodeURIComponent(part.slice(separator + 1).trim());
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+export function setRefreshCookie(c: Context, token: string | null): void {
+  const value = token ? `refresh_token=${encodeURIComponent(token)}; ` : 'refresh_token=; ';
+  const expiry = token ? '' : 'Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; ';
+  const hostname = new URL(c.req.url).hostname;
+  const secure = hostname === 'localhost' || hostname === '127.0.0.1' ? '' : 'Secure; ';
+  c.header(
+    'Set-Cookie',
+    `${value}${expiry}HttpOnly; ${secure}SameSite=Lax; Path=/api/token`
+  );
+}
+
+/**
+ * Validates an access token and confirms that its account still exists and is active.
+ */
+export async function authenticateAccessToken(
+  authHeader: string | undefined,
+  secret: string,
+  supabase: SupabaseClient
+): Promise<number | null> {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.substring(7).trim();
+  if (!token) return null;
+
+  const payload = await verifyToken(token, secret);
+  if (
+    !payload ||
+    payload.token_type !== 'access' ||
+    !Number.isInteger(payload.user_id) ||
+    payload.user_id <= 0 ||
+    typeof payload.username !== 'string' ||
+    !payload.username
+  ) {
+    return null;
+  }
+
+  const { data: user, error } = await supabase
+    .from('auth_user')
+    .select('id, username, is_active')
+    .eq('id', payload.user_id)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error || !user || user.username !== payload.username) {
+    return null;
+  }
+
+  return user.id;
 }
 
 /**
@@ -145,6 +227,20 @@ export async function generateTokens(
 export async function verifyToken(token: string, secret: string): Promise<JWTPayload | null> {
   try {
     const payload = (await verify(token, secret, 'HS256')) as unknown as JWTPayload;
+    if (
+      !payload ||
+      !Number.isInteger(payload.user_id) ||
+      payload.user_id <= 0 ||
+      typeof payload.username !== 'string' ||
+      !payload.username ||
+      (payload.token_type !== 'access' && payload.token_type !== 'refresh') ||
+      !Number.isInteger(payload.exp) ||
+      !Number.isInteger(payload.iat) ||
+      typeof payload.jti !== 'string' ||
+      !payload.jti
+    ) {
+      return null;
+    }
     return payload;
   } catch {
     return null;

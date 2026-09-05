@@ -1,21 +1,54 @@
 import { Hono } from 'hono';
 import { Env, CareerSuggestion, RoadmapStep } from '../types';
 import { getSupabase } from '../services/db';
-import { verifyToken } from '../services/auth';
+import { authenticateAccessToken, getJwtSecret } from '../services/auth';
 import { getCareerSuggestions } from '../services/ai';
+import { rateLimit } from '../services/rateLimit';
 
 const assessment = new Hono<{ Bindings: Env }>();
+const MAX_BODY_BYTES = 16 * 1024;
+const MAX_ANSWERS = 20;
+const MAX_ANSWER_LENGTH = 2000;
+
+assessment.use('*', rateLimit(5, 60_000));
 
 /**
  * POST /api/submit/
  * Processes user assessment answers, invokes AI engine, and saves roadmaps
  */
 assessment.post('/', async (c) => {
-  const body = await c.req.json<{ answers?: Record<string, any> }>();
+  const contentLength = Number(c.req.header('content-length') || 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    return c.json({ error: 'Request body is too large.' }, 413);
+  }
+
+  let body: { answers?: Record<string, unknown> };
+  try {
+    const raw = await c.req.text();
+    if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
+      return c.json({ error: 'Request body is too large.' }, 413);
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return c.json({ error: 'Request body must be a JSON object.' }, 400);
+    }
+    body = parsed as { answers?: Record<string, unknown> };
+  } catch {
+    return c.json({ error: 'Invalid JSON request body.' }, 400);
+  }
+
   const answers = body.answers;
 
-  if (!answers || typeof answers !== 'object') {
+  if (!answers || typeof answers !== 'object' || Array.isArray(answers)) {
     return c.json({ answers: ['This field is required.'] }, 400);
+  }
+
+  const answerEntries = Object.entries(answers);
+  if (answerEntries.length > MAX_ANSWERS || answerEntries.some(([key, value]) =>
+    key.length > 255 || (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') ||
+    (typeof value === 'string' && value.length > MAX_ANSWER_LENGTH)
+  )) {
+    return c.json({ answers: ['Answers are invalid or too large.'] }, 400);
   }
 
   const supabase = getSupabase(c.env);
@@ -24,11 +57,10 @@ assessment.post('/', async (c) => {
   let userId: number | null = null;
   const authHeader = c.req.header('Authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    const jwtSecret = c.env.JWT_SECRET || 'careersea-default-jwt-secret';
-    const payload = await verifyToken(token, jwtSecret);
-    if (payload && payload.token_type === 'access') {
-      userId = payload.user_id;
+    const jwtSecret = getJwtSecret(c.env.JWT_SECRET);
+    userId = await authenticateAccessToken(authHeader, jwtSecret, supabase);
+    if (!userId) {
+      return c.json({ detail: 'Token is invalid or expired.' }, 401);
     }
   }
 
@@ -132,7 +164,7 @@ assessment.post('/', async (c) => {
   } catch (err: any) {
     console.error('Assessment submission error:', err);
     return c.json(
-      { error: 'AI Service Failed: ' + (err?.message || String(err)) },
+      { error: 'Assessment processing failed.' },
       500
     );
   }

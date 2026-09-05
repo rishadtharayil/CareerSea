@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +31,9 @@ if env_path.exists():
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-fallback-for-dev')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('DJANGO_SECRET_KEY must be configured.')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
@@ -41,6 +44,9 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'no-referrer'
+    X_FRAME_OPTIONS = 'DENY'
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -80,6 +86,8 @@ CORS_ALLOWED_ORIGINS = [
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://careersea.in',
@@ -175,6 +183,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Bound JSON/form uploads before DRF or Django allocates large request bodies.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 16 * 1024
+
 from datetime import timedelta
 
 REST_FRAMEWORK = {
@@ -187,6 +198,10 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'assessment_burst': '2/min',
         'assessment_sustained': '10/day',
+        'assessment_user_burst': '2/min',
+        'assessment_user_sustained': '10/day',
+        'step_ai': '10/min',
+        'auth': '10/min',
     }
 }
 

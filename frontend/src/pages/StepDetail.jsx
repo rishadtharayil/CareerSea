@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion as Motion } from 'framer-motion';
 import { ArrowLeft, Clock, BookOpen, Send, Sparkles, User, Brain } from 'lucide-react';
 import api from '../api';
 
 const StepDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
 
     const [step, setStep] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -129,7 +128,7 @@ const StepDetail = () => {
                 return (
                     <ul key={idx} className="mb-4 text-left">
                         {items.map((item, itemIdx) => {
-                            const cleanItem = item.replace(/^[\-\*]\s+/, '');
+                            const cleanItem = item.replace(/^[-*]\s+/, '');
                             return (
                                 <li key={itemIdx} className="ml-4 list-disc font-bold text-text-light mb-2 leading-relaxed text-sm sm:text-base">
                                     {parseInlineBold(cleanItem)}
@@ -175,13 +174,13 @@ const StepDetail = () => {
     if (loading) {
         return (
             <div className="max-w-[1500px] mx-auto py-12 px-4 flex flex-col gap-8 items-center justify-center min-h-[70vh]">
-                <motion.div
+                <Motion.div
                     animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0, -5, 0] }}
                     transition={{ repeat: Infinity, duration: 2 }}
                     className="flex items-center gap-3 bg-tertiary border-4 border-text px-8 py-4 font-black uppercase text-xl rotate-1 shadow-pop"
                 >
                     <Sparkles size={24} /> Analyzing & Generating Study Guide...
-                </motion.div>
+                </Motion.div>
                 
                 {/* Visual Skeleton */}
                 <div className="w-full flex flex-col lg:flex-row gap-8 items-stretch mt-8 animate-pulse">

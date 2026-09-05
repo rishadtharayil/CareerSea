@@ -11,10 +11,9 @@ const Login = () => {
         e.preventDefault();
         try {
             const res = await api.post('/api/token/', { username, password });
-            localStorage.setItem('access_token', res.data.access);
-            localStorage.setItem('refresh_token', res.data.refresh);
+            sessionStorage.setItem('access_token', res.data.access);
             navigate('/');
-        } catch (error) {
+        } catch {
             alert("Login failed. Please check your credentials.");
         }
     };

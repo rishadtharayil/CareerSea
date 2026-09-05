@@ -303,9 +303,9 @@ def _get_career_suggestion_aistudio(answers: dict) -> list:
         logger.error("AISTUDIO_API_KEY is not set.")
         raise Exception("AI Studio API Key is missing.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent"
     
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "x-goog-api-key": AISTUDIO_API_KEY}
     
     data = {
         "system_instruction": {
@@ -443,9 +443,9 @@ def _get_step_deep_dive_aistudio(career_title: str, step_title: str, step_descri
         logger.error("AISTUDIO_API_KEY is not set.")
         raise Exception("AI Studio API Key is missing.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent"
     
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "x-goog-api-key": AISTUDIO_API_KEY}
     
     data = {
         "system_instruction": {
@@ -577,9 +577,9 @@ def _get_step_chat_aistudio(career_title: str, step_title: str, step_description
         logger.error("AISTUDIO_API_KEY is not set.")
         raise Exception("AI Studio API Key is missing.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent?key={AISTUDIO_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{AISTUDIO_MODEL}:generateContent"
     
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "x-goog-api-key": AISTUDIO_API_KEY}
     
     prompt = _build_chat_prompt(career_title, step_title, step_description, deep_dive, chat_history, new_message, user_answers)
     
