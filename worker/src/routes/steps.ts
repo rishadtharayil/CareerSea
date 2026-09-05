@@ -1,16 +1,12 @@
-import { Hono } from 'hono';
+import { Hono, Handler } from 'hono';
 import { Env, RoadmapStep, ChatMessage } from '../types';
 import { getSupabase } from '../services/db';
 import { getStepDeepDive, getStepChat } from '../services/ai';
 
 const steps = new Hono<{ Bindings: Env }>();
 
-/**
- * GET /api/steps/:id/
- * Retrieves step details, generating deep-dive guide on demand if null
- */
-steps.get('/:id/', async (c) => {
-  const stepId = parseInt(c.req.param('id'), 10);
+const stepDetailHandler: Handler<{ Bindings: Env }> = async (c) => {
+  const stepId = parseInt(c.req.param('id') || '', 10);
   if (isNaN(stepId)) {
     return c.json({ error: 'Invalid step ID' }, 400);
   }
@@ -85,14 +81,10 @@ steps.get('/:id/', async (c) => {
     },
     200
   );
-});
+};
 
-/**
- * POST /api/steps/:id/chat/
- * Interactive chat with AI mentor for a specific milestone
- */
-steps.post('/:id/chat/', async (c) => {
-  const stepId = parseInt(c.req.param('id'), 10);
+const stepChatHandler: Handler<{ Bindings: Env }> = async (c) => {
+  const stepId = parseInt(c.req.param('id') || '', 10);
   if (isNaN(stepId)) {
     return c.json({ error: 'Invalid step ID' }, 400);
   }
@@ -179,6 +171,12 @@ steps.post('/:id/chat/', async (c) => {
     console.error('Mentor chat error:', err);
     return c.json({ error: 'Failed to get mentor response: ' + (err?.message || String(err)) }, 500);
   }
-});
+};
+
+steps.get('/:id', stepDetailHandler);
+steps.get('/:id/', stepDetailHandler);
+
+steps.post('/:id/chat', stepChatHandler);
+steps.post('/:id/chat/', stepChatHandler);
 
 export default steps;

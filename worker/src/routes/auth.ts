@@ -1,15 +1,11 @@
-import { Hono } from 'hono';
+import { Hono, Handler } from 'hono';
 import { Env, AuthUser } from '../types';
 import { getSupabase } from '../services/db';
 import { hashPassword, verifyPassword, generateTokens, verifyToken } from '../services/auth';
 
 const auth = new Hono<{ Bindings: Env }>();
 
-/**
- * POST /api/register/
- * Creates a new user in auth_user with Django-compatible PBKDF2 password
- */
-auth.post('/register/', async (c) => {
+const registerHandler: Handler<{ Bindings: Env }> = async (c) => {
   const body = await c.req.json<{ username?: string; email?: string; password?: string }>();
   const username = body.username?.trim();
   const email = body.email?.trim() || '';
@@ -60,13 +56,9 @@ auth.post('/register/', async (c) => {
   }
 
   return c.json({ username: newUser.username, email: newUser.email }, 201);
-});
+};
 
-/**
- * POST /api/token/
- * Authenticates user credentials and issues access & refresh tokens
- */
-auth.post('/token/', async (c) => {
+const tokenHandler: Handler<{ Bindings: Env }> = async (c) => {
   const body = await c.req.json<{ username?: string; password?: string }>();
   const username = body.username?.trim();
   const password = body.password;
@@ -102,13 +94,9 @@ auth.post('/token/', async (c) => {
   const tokens = await generateTokens(user.id, user.username, jwtSecret);
 
   return c.json(tokens, 200);
-});
+};
 
-/**
- * POST /api/token/refresh/
- * Refreshes an expired access token using a valid refresh token
- */
-auth.post('/token/refresh/', async (c) => {
+const refreshHandler: Handler<{ Bindings: Env }> = async (c) => {
   const body = await c.req.json<{ refresh?: string }>();
   const refreshToken = body.refresh;
 
@@ -127,6 +115,15 @@ auth.post('/token/refresh/', async (c) => {
   const tokens = await generateTokens(payload.user_id, payload.username, jwtSecret);
 
   return c.json({ access: tokens.access, refresh: tokens.refresh }, 200);
-});
+};
+
+auth.post('/register', registerHandler);
+auth.post('/register/', registerHandler);
+
+auth.post('/token', tokenHandler);
+auth.post('/token/', tokenHandler);
+
+auth.post('/token/refresh', refreshHandler);
+auth.post('/token/refresh/', refreshHandler);
 
 export default auth;

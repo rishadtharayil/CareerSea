@@ -53,13 +53,24 @@ app.get('/api/health/', (c) => {
   return c.json({ status: 'healthy', edge: true });
 });
 
-// Mount modular sub-routers
+// Mount modular sub-routers (both with and without trailing slash)
 app.route('/api', auth);
+app.route('/api/', auth);
+
 app.route('/api/questions', questions);
+app.route('/api/questions/', questions);
+
 app.route('/api/submit', assessment);
+app.route('/api/submit/', assessment);
+
 app.route('/api/steps', steps);
+app.route('/api/steps/', steps);
+
 app.route('/api/history', history);
+app.route('/api/history/', history);
+
 app.route('/api/seed', seed);
+app.route('/api/seed/', seed);
 
 // 404 handler
 app.notFound((c) => {
