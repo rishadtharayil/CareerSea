@@ -1,49 +1,66 @@
-name: Deploy to Cloud Run
+name: Deploy to Cloudflare Workers & Pages
 
-# Legacy Cloud Run Deployment (Deprecated in favor of deploy-cloudflare.yml)
-# Trigger manually via GitHub Actions workflow_dispatch if needed
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-worker:
+    name: Deploy Backend Worker
     runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Google Auth
-        id: auth
-        uses: google-github-actions/auth@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          workload_identity_provider: 'projects/1035335423870/locations/global/workloadIdentityPools/careersea-pool/providers/github-provider'
-          service_account: 'careersea-deployer@project-bbccc83a-4d06-4b06-b85.iam.gserviceaccount.com'
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'worker/package-lock.json'
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Deploy Backend
+      - name: Install Worker Dependencies
         run: |
-          cd backend
-          gcloud run deploy career-sea-backend \
-            --source . \
-            --region us-central1 \
-            --set-secrets="DJANGO_SECRET_KEY=DJANGO_SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest,AISTUDIO_API_KEY=AISTUDIO_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "DB_NAME=postgres,DB_USER=postgres,DB_HOST=db.qhrmenvunfcykvmpyshb.supabase.co,DB_PORT=5432,DEBUG=False,AI_PROVIDER=aistudio,AISTUDIO_MODEL=gemini-3.1-flash-lite,GCP_PROJECT=project-bbccc83a-4d06-4b06-b85,GCP_LOCATION=us-central1" \
-            --clear-cloudsql-instances \
-            --allow-unauthenticated \
-            --quiet
+          cd worker
+          npm ci
 
-      - name: Deploy Frontend
+      - name: Deploy Worker via Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'worker'
+
+  deploy-pages:
+    name: Deploy Frontend Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install Frontend Dependencies
         run: |
           cd frontend
-          gcloud run deploy career-sea-frontend \
-            --source . \
-            --region us-central1 \
-            --port 8080 \
-            --allow-unauthenticated \
-            --quiet
+          npm ci
+
+      - name: Build Frontend SPA
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=careersea-frontend
+          workingDirectory: 'frontend'

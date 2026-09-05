@@ -18,7 +18,7 @@ questions.get('/', async (c) => {
 
   if (error) {
     console.error('Error fetching questions:', error);
-    return c.json({ error: 'Failed to fetch questions' }, 500);
+    return c.json({ error: 'Failed to fetch questions', details: error }, 500);
   }
 
   return c.json(data || [], 200);
