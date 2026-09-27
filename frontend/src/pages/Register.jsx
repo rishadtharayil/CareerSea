@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
-import api from '../api';
+import api, { getApiErrorMessage } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
+
+const MIN_PASSWORD_LENGTH = 12;
 
 const Register = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+
+        if (password.length < MIN_PASSWORD_LENGTH) {
+            setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+            return;
+        }
+
+        setSubmitting(true);
         try {
             await api.post('/api/register/', { username, email, password });
-            alert("Registration successful! You can now log in.");
             navigate('/login');
-        } catch {
-            alert("Registration failed. Try a different username.");
+        } catch (err) {
+            setError(getApiErrorMessage(err, 'Registration failed. Please try again.'));
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -49,10 +62,21 @@ const Register = () => {
                         className="pop-input" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 
+                        minLength={MIN_PASSWORD_LENGTH}
                         required 
                     />
+                    <p className="mt-2 text-sm font-bold uppercase tracking-wider opacity-70">
+                        Minimum {MIN_PASSWORD_LENGTH} characters
+                    </p>
                 </div>
-                <button type="submit" className="pop-button w-full">Create Account</button>
+                {error && (
+                    <div role="alert" className="bg-accent text-text border-pop border-text rounded-pop px-4 py-3 font-black uppercase text-sm tracking-wider shadow-pop-sm">
+                        {error}
+                    </div>
+                )}
+                <button type="submit" className="pop-button w-full" disabled={submitting}>
+                    {submitting ? 'Creating...' : 'Create Account'}
+                </button>
             </form>
             <p className="mt-6 text-center text-base">
                 Already have an account? <Link to="/login" className="font-bold underline decoration-2 underline-offset-4 hover:text-primary transition-colors">Login here</Link>

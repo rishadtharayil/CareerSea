@@ -71,11 +71,21 @@ async function derivePbkdf2Sha256(password: string, salt: string, iterations: nu
 }
 
 /**
+ * Cloudflare Workers' Web Crypto implementation rejects PBKDF2 above 100000
+ * iterations with `NotSupportedError: Pbkdf2 failed: iteration counts above
+ * 100000 are not supported`. 600000 (Django's default) therefore throws at
+ * runtime and surfaces as an unhandled 500. 100000 is the highest value the
+ * Workers runtime accepts, so it is also the ceiling for verifying hashes.
+ */
+export const PBKDF2_ITERATIONS = 100000;
+const MAX_VERIFY_ITERATIONS = 100000;
+
+/**
  * Creates a Django-compatible PBKDF2-SHA256 password hash:
  * pbkdf2_sha256$<iterations>$<salt>$<hash>
  */
 export async function hashPassword(password: string): Promise<string> {
-  const iterations = 600000;
+  const iterations = PBKDF2_ITERATIONS;
   const salt = generateSalt(12);
   const hash = await derivePbkdf2Sha256(password, salt, iterations);
   return `pbkdf2_sha256$${iterations}$${salt}$${hash}`;
@@ -97,12 +107,19 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   const salt = parts[2];
   const expectedHash = parts[3];
 
-  // Reject malformed or unexpectedly expensive hashes before deriving bits.
-  if (!Number.isInteger(iterations) || iterations < 1 || iterations > 2000000 || !salt || !expectedHash) {
+  // Reject malformed hashes and any iteration count the Workers runtime cannot
+  // derive, so verification fails closed with 401 instead of throwing a 500.
+  if (!Number.isInteger(iterations) || iterations < 1 || iterations > MAX_VERIFY_ITERATIONS || !salt || !expectedHash) {
     return false;
   }
 
-  const computedHash = await derivePbkdf2Sha256(password, salt, iterations);
+  let computedHash: string;
+  try {
+    computedHash = await derivePbkdf2Sha256(password, salt, iterations);
+  } catch {
+    return false;
+  }
+
   return timingSafeEqual(computedHash, expectedHash);
 }
 

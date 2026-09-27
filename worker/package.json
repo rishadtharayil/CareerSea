@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "reset-passwords": "vite-node scripts/reset-passwords.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
@@ -16,6 +19,8 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250224.0",
     "typescript": "^5.7.3",
+    "vite-node": "^6.0.0",
+    "vitest": "^5.0.2",
     "wrangler": "^3.111.0"
   }
 }

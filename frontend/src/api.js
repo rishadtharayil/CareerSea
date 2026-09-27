@@ -85,3 +85,28 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+/**
+ * Extracts a human-readable message from an API error.
+ * The Worker returns several shapes: { detail }, { error }, or per-field
+ * arrays such as { password: ['...'] }. Never discard these silently.
+ */
+export function getApiErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
+    const data = error?.response?.data;
+
+    if (data && typeof data === 'object') {
+        if (typeof data.detail === 'string' && data.detail) return data.detail;
+        for (const field of ['username', 'email', 'password', 'answers', 'text']) {
+            const value = data[field];
+            if (Array.isArray(value) && value.length > 0) return String(value[0]);
+            if (typeof value === 'string' && value) return value;
+        }
+        if (typeof data.error === 'string' && data.error) return data.error;
+    }
+
+    if (error?.message === 'Network Error') {
+        return 'Cannot reach the server. Please check your connection.';
+    }
+
+    return fallback;
+}

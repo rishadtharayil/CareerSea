@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
-import api from '../api';
+import api, { getApiErrorMessage } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setSubmitting(true);
         try {
             const res = await api.post('/api/token/', { username, password });
             sessionStorage.setItem('access_token', res.data.access);
             navigate('/');
-        } catch {
-            alert("Login failed. Please check your credentials.");
+        } catch (err) {
+            setError(getApiErrorMessage(err, 'Login failed. Please check your credentials.'));
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -42,7 +48,14 @@ const Login = () => {
                         required 
                     />
                 </div>
-                <button type="submit" className="pop-button w-full">Sign In</button>
+                {error && (
+                    <div role="alert" className="bg-accent text-text border-pop border-text rounded-pop px-4 py-3 font-black uppercase text-sm tracking-wider shadow-pop-sm">
+                        {error}
+                    </div>
+                )}
+                <button type="submit" className="pop-button w-full" disabled={submitting}>
+                    {submitting ? 'Signing In...' : 'Sign In'}
+                </button>
             </form>
             <p className="mt-6 text-center text-base">
                 Don't have an account? <Link to="/register" className="font-bold underline decoration-2 underline-offset-4 hover:text-primary transition-colors">Register here</Link>
