@@ -4,8 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    // PBKDF2-SHA256 with 600k iterations is intentionally slow.
-    testTimeout: 60_000,
-    hookTimeout: 60_000,
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });

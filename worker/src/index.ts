@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { Env } from './types';
-import auth from './routes/auth';
 import questions from './routes/questions';
 import assessment from './routes/assessment';
 import steps from './routes/steps';
@@ -61,9 +60,8 @@ app.get('/api/health/', (c) => {
 });
 
 // Mount modular sub-routers (both with and without trailing slash)
-app.route('/api', auth);
-app.route('/api/', auth);
-
+// Authentication is handled by Supabase Auth; the browser signs in via
+// supabase-js and presents the resulting access token as a Bearer header.
 app.route('/api/questions', questions);
 app.route('/api/questions/', questions);
 

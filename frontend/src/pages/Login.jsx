@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import api, { getApiErrorMessage } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -13,15 +13,26 @@ const Login = () => {
         e.preventDefault();
         setError('');
         setSubmitting(true);
-        try {
-            const res = await api.post('/api/token/', { username, password });
-            sessionStorage.setItem('access_token', res.data.access);
-            navigate('/');
-        } catch (err) {
-            setError(getApiErrorMessage(err, 'Login failed. Please check your credentials.'));
-        } finally {
-            setSubmitting(false);
+
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+        });
+
+        setSubmitting(false);
+
+        if (authError) {
+            // Supabase returns a deliberately vague message here to avoid
+            // confirming whether an account exists.
+            setError(
+                authError.message === 'Invalid login credentials'
+                    ? 'Incorrect email or password.'
+                    : authError.message
+            );
+            return;
         }
+
+        navigate('/');
     };
 
     return (
@@ -29,23 +40,25 @@ const Login = () => {
             <h1 className="text-4xl mb-8 uppercase">LOGIN</h1>
             <form onSubmit={handleSubmit} className="grid gap-6">
                 <div>
-                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">USERNAME</label>
-                    <input 
-                        type="text" 
-                        className="pop-input" 
-                        value={username} 
-                        onChange={(e) => setUsername(e.target.value)} 
-                        required 
+                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">EMAIL</label>
+                    <input
+                        type="email"
+                        className="pop-input"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                        required
                     />
                 </div>
                 <div>
                     <label className="block font-black mb-2 uppercase text-sm tracking-wider">PASSWORD</label>
-                    <input 
-                        type="password" 
-                        className="pop-input" 
-                        value={password} 
-                        onChange={(e) => setPassword(e.target.value)} 
-                        required 
+                    <input
+                        type="password"
+                        className="pop-input"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        required
                     />
                 </div>
                 {error && (

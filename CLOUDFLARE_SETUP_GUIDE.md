@@ -68,9 +68,10 @@ Because the Worker runs in a secure, serverless edge environment, it communicate
 Your Cloudflare Worker requires these secrets:
 - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role secret from Step 2.
 - `AISTUDIO_API_KEY`: Your Google AI Studio API key.
-- `JWT_SECRET`: A secure random string used to sign and verify JWT authentication tokens.
 - `SEED_SECRET`: A separate one-time setup secret for the protected seed endpoint.
 - `OPENROUTER_API_KEY`: *(Optional)* If using `AI_PROVIDER=openrouter`.
+
+> Authentication is handled by Supabase Auth, so there is **no `JWT_SECRET`** — the Worker no longer signs or verifies its own tokens. Remove it with `npx wrangler secret delete JWT_SECRET`.
 
 ### Option A: Set Secrets via Wrangler CLI (Recommended)
 Run the following commands inside the `worker/` directory:
@@ -86,15 +87,11 @@ npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npx wrangler secret put AISTUDIO_API_KEY
 # When prompted, paste your Gemini API key
 
-# 3. JWT Signing Secret (generate any secure 32+ character random string)
-npx wrangler secret put JWT_SECRET
-# When prompted, paste your secure string
-
-# 4. Seed endpoint secret (used only during initial setup)
+# 3. Seed endpoint secret (used only during initial setup)
 npx wrangler secret put SEED_SECRET
 # When prompted, paste a separate secure random string
 
-# 5. (Optional) OpenRouter API Key if you use OpenRouter
+# 4. (Optional) OpenRouter API Key if you use OpenRouter
 npx wrangler secret put OPENROUTER_API_KEY
 ```
 
@@ -152,7 +149,14 @@ AISTUDIO_MODEL=gemini-3.1-flash-lite
 AISTUDIO_API_KEY=your_google_ai_studio_api_key_here
 SUPABASE_URL=https://qhrmenvunfcykvmpyshb.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-JWT_SECRET=your_local_development_jwt_secret_12345
+```
+
+The frontend needs the Supabase URL and **publishable** key (never the service role key) in `frontend/.env.development` and `frontend/.env.production`:
+
+```ini
+VITE_API_BASE_URL=http://localhost:8787
+VITE_SUPABASE_URL=https://qhrmenvunfcykvmpyshb.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 ### 6.2 Start the Worker Locally

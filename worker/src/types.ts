@@ -6,7 +6,6 @@ export interface Env {
   OPENROUTER_API_KEY?: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
-  JWT_SECRET: string;
   SEED_SECRET?: string;
 }
 
@@ -18,17 +17,9 @@ export interface Question {
 }
 
 export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-  is_superuser: boolean;
-  is_staff: boolean;
-  is_active: boolean;
-  date_joined: string;
-  last_login?: string | null;
-  first_name?: string;
-  last_name?: string;
+  id: string;
+  email: string | null;
+  username: string | null;
 }
 
 export interface ChatMessage {
@@ -63,18 +54,9 @@ export interface CareerSuggestion {
 
 export interface UserResponse {
   id?: number;
-  user_id?: number | null;
+  /** Supabase Auth user UUID. Null for anonymous assessments. */
+  user_id?: string | null;
   answers: Record<string, any>;
   created_at?: string;
   suggestions?: CareerSuggestion[];
-}
-
-export interface JWTPayload {
-  [key: string]: unknown;
-  user_id: number;
-  username: string;
-  token_type: 'access' | 'refresh';
-  exp: number;
-  iat: number;
-  jti: string;
 }

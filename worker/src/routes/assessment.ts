@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Env, CareerSuggestion, RoadmapStep } from '../types';
 import { getSupabase } from '../services/db';
-import { authenticateAccessToken, getJwtSecret } from '../services/auth';
+import { getAuthenticatedUser } from '../services/auth';
 import { getCareerSuggestions } from '../services/ai';
 import { rateLimit } from '../services/rateLimit';
 
@@ -54,14 +54,14 @@ assessment.post('/', async (c) => {
   const supabase = getSupabase(c.env);
 
   // Optional authentication check
-  let userId: number | null = null;
+  let userId: string | null = null;
   const authHeader = c.req.header('Authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    const jwtSecret = getJwtSecret(c.env.JWT_SECRET);
-    userId = await authenticateAccessToken(authHeader, jwtSecret, supabase);
-    if (!userId) {
+    const user = await getAuthenticatedUser(authHeader, supabase);
+    if (!user) {
       return c.json({ detail: 'Token is invalid or expired.' }, 401);
     }
+    userId = user.id;
   }
 
   const now = new Date().toISOString();

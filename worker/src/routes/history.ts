@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Env, UserResponse, CareerSuggestion, RoadmapStep } from '../types';
 import { getSupabase } from '../services/db';
-import { authenticateAccessToken, getJwtSecret } from '../services/auth';
+import { getAuthenticatedUser } from '../services/auth';
 
 const history = new Hono<{ Bindings: Env }>();
 
@@ -16,9 +16,9 @@ history.get('/', async (c) => {
   }
 
   const supabase = getSupabase(c.env);
-  const userId = await authenticateAccessToken(authHeader, getJwtSecret(c.env.JWT_SECRET), supabase);
+  const user = await getAuthenticatedUser(authHeader, supabase);
 
-  if (!userId) {
+  if (!user) {
     return c.json({ detail: 'Given token not valid for any token type', code: 'token_not_valid' }, 401);
   }
 
@@ -26,7 +26,7 @@ history.get('/', async (c) => {
   const { data: responses, error: respErr } = await supabase
     .from('api_userresponse')
     .select('id, answers, created_at')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .range(0, 49)
     .order('created_at', { ascending: false });
 

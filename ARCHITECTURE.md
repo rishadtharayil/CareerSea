@@ -10,7 +10,7 @@ This document outlines the technical infrastructure and data flow of the CareerS
 - **CI/CD:** **GitHub Actions** deploying via `cloudflare/wrangler-action@v3`.
 - **AI Engine (Primary):** Google AI Studio — Gemini 3.1 Flash Lite (`gemini-3.1-flash-lite`) via direct HTTPS `fetch()`.
 - **AI Engine (Fallback):** OpenRouter API — controlled by `AI_PROVIDER=openrouter` env var. Model configurable via `OPENROUTER_MODEL`.
-- **HTTP Client:** Centralized `api.js` axios instance (frontend) with automatic JWT access-token refresh on 401.
+- **HTTP Client:** Centralized `api.js` axios instance (frontend). Attaches the Supabase access token and, on 401, refreshes the session once and retries.
 
 ## 🔄 Deployment Pipeline
 1. **Local Dev:**
@@ -25,8 +25,9 @@ This document outlines the technical infrastructure and data flow of the CareerS
    - `api.careersea.in` -> Cloudflare Worker (Backend API)
 
 ## 📊 Data Models
-### User (`auth_user`)
-- Compatible with Django PBKDF2-SHA256 password hashing.
+### User
+- Accounts live in Supabase Auth (`auth.users`), keyed by UUID. The browser signs in with `supabase-js`; the Worker validates the returned access token.
+- ⚠️ **Email-based login.** Supabase Auth requires an email for every account, so the login field is EMAIL rather than USERNAME. Password reset requires SMTP to be configured — the default Supabase mailer is rate-limited to team members only.
 ### Question (`api_question`)
 - Represents diagnostic assessment questions.
 ### UserResponse (`api_userresponse`)
@@ -42,5 +43,6 @@ This document outlines the technical infrastructure and data flow of the CareerS
 - **SSL / TLS:** Full edge SSL termination managed automatically by Cloudflare.
 - **CORS:** Strict origin validation allowing only `careersea.in`, `www.careersea.in`, and verified local development origins.
 - **RLS:** Enabled on all Supabase tables to block direct unauthenticated client-side REST access; backend Worker uses secure `service_role` key.
-- **JWT Refresh:** Frontend `api.js` interceptor automatically refreshes the access token on 401 and retries the original request.
+- **Auth:** Supabase Auth. The Worker holds no signing secret and performs no password hashing — it validates the browser's access token via `supabase.auth.getUser()` on protected routes.
+- **JWT Refresh:** Frontend `api.js` interceptor refreshes the Supabase session on 401 and retries the original request.
 - **Edge Performance:** 0ms cold starts, global V8 isolate execution, and zero container maintenance overhead.

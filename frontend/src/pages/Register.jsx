@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
-import api, { getApiErrorMessage } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 const MIN_PASSWORD_LENGTH = 12;
 
 const Register = () => {
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [notice, setNotice] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setNotice('');
 
         if (password.length < MIN_PASSWORD_LENGTH) {
             setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
@@ -22,14 +23,26 @@ const Register = () => {
         }
 
         setSubmitting(true);
-        try {
-            await api.post('/api/register/', { username, email, password });
-            navigate('/login');
-        } catch (err) {
-            setError(getApiErrorMessage(err, 'Registration failed. Please try again.'));
-        } finally {
-            setSubmitting(false);
+
+        const { data, error: authError } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+        });
+
+        setSubmitting(false);
+
+        if (authError) {
+            setError(authError.message);
+            return;
         }
+
+        // When email confirmation is enabled there is no session yet.
+        if (data.session) {
+            navigate('/');
+            return;
+        }
+
+        setNotice('Account created. Check your email to confirm it, then sign in.');
     };
 
     return (
@@ -37,33 +50,26 @@ const Register = () => {
             <h1 className="text-4xl mb-8 uppercase">REGISTER</h1>
             <form onSubmit={handleSubmit} className="grid gap-6">
                 <div>
-                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">USERNAME</label>
-                    <input 
-                        type="text" 
-                        className="pop-input" 
-                        value={username} 
-                        onChange={(e) => setUsername(e.target.value)} 
-                        required 
-                    />
-                </div>
-                <div>
-                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">EMAIL (OPTIONAL)</label>
-                    <input 
-                        type="email" 
-                        className="pop-input" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
+                    <label className="block font-black mb-2 uppercase text-sm tracking-wider">EMAIL</label>
+                    <input
+                        type="email"
+                        className="pop-input"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                        required
                     />
                 </div>
                 <div>
                     <label className="block font-black mb-2 uppercase text-sm tracking-wider">PASSWORD</label>
-                    <input 
-                        type="password" 
-                        className="pop-input" 
-                        value={password} 
-                        onChange={(e) => setPassword(e.target.value)} 
+                    <input
+                        type="password"
+                        className="pop-input"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
                         minLength={MIN_PASSWORD_LENGTH}
-                        required 
+                        required
                     />
                     <p className="mt-2 text-sm font-bold uppercase tracking-wider opacity-70">
                         Minimum {MIN_PASSWORD_LENGTH} characters
@@ -72,6 +78,11 @@ const Register = () => {
                 {error && (
                     <div role="alert" className="bg-accent text-text border-pop border-text rounded-pop px-4 py-3 font-black uppercase text-sm tracking-wider shadow-pop-sm">
                         {error}
+                    </div>
+                )}
+                {notice && (
+                    <div role="status" className="bg-secondary text-text border-pop border-text rounded-pop px-4 py-3 font-black uppercase text-sm tracking-wider shadow-pop-sm">
+                        {notice}
                     </div>
                 )}
                 <button type="submit" className="pop-button w-full" disabled={submitting}>

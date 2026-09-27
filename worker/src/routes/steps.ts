@@ -2,7 +2,7 @@ import { Hono, Handler } from 'hono';
 import { Env, RoadmapStep, ChatMessage } from '../types';
 import { getSupabase } from '../services/db';
 import { getStepDeepDive, getStepChat } from '../services/ai';
-import { authenticateAccessToken, getJwtSecret } from '../services/auth';
+import { getAuthenticatedUser } from '../services/auth';
 import { rateLimit } from '../services/rateLimit';
 
 const steps = new Hono<{ Bindings: Env }>();
@@ -10,7 +10,7 @@ const MAX_CHAT_BODY_BYTES = 8192;
 const MAX_CHAT_TEXT_LENGTH = 4000;
 
 async function getOwner(c: Parameters<Handler<{ Bindings: Env }>>[0], supabase: ReturnType<typeof getSupabase>) {
-  return authenticateAccessToken(c.req.header('Authorization'), getJwtSecret(c.env.JWT_SECRET), supabase);
+  return getAuthenticatedUser(c.req.header('Authorization'), supabase);
 }
 
 const stepDetailHandler: Handler<{ Bindings: Env }> = async (c) => {
@@ -20,8 +20,8 @@ const stepDetailHandler: Handler<{ Bindings: Env }> = async (c) => {
   }
 
   const supabase = getSupabase(c.env);
-  const userId = await getOwner(c, supabase);
-  if (!userId) return c.json({ detail: 'Authentication credentials were not provided.' }, 401);
+  const owner = await getOwner(c, supabase);
+  if (!owner) return c.json({ detail: 'Authentication credentials were not provided.' }, 401);
 
   // Fetch step with its parent career and user response answers
   const { data: step, error: stepErr } = await supabase
@@ -43,7 +43,7 @@ const stepDetailHandler: Handler<{ Bindings: Env }> = async (c) => {
   }
 
   const ownerId = (step.career as any)?.user_response?.user_id;
-  if (ownerId !== userId) return c.json({ error: 'RoadmapStep not found' }, 404);
+  if (ownerId !== owner.id) return c.json({ error: 'RoadmapStep not found' }, 404);
 
   let deepDive = step.deep_dive;
 
@@ -104,8 +104,8 @@ const stepChatHandler: Handler<{ Bindings: Env }> = async (c) => {
   }
 
   const supabase = getSupabase(c.env);
-  const userId = await getOwner(c, supabase);
-  if (!userId) return c.json({ detail: 'Authentication credentials were not provided.' }, 401);
+  const owner = await getOwner(c, supabase);
+  if (!owner) return c.json({ detail: 'Authentication credentials were not provided.' }, 401);
 
   const contentLength = Number(c.req.header('content-length') || 0);
   if (contentLength > MAX_CHAT_BODY_BYTES) return c.json({ error: 'Request body is too large.' }, 413);
@@ -150,7 +150,7 @@ const stepChatHandler: Handler<{ Bindings: Env }> = async (c) => {
   }
 
   const ownerId = (step.career as any)?.user_response?.user_id;
-  if (ownerId !== userId) return c.json({ error: 'RoadmapStep not found' }, 404);
+  if (ownerId !== owner.id) return c.json({ error: 'RoadmapStep not found' }, 404);
 
   // 1. Fetch chat history (before saving new message)
   const { data: historyData } = await supabase

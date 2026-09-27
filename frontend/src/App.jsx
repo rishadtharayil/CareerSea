@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Welcome from './components/Welcome';
@@ -8,15 +8,36 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import StepDetail from './pages/StepDetail';
-import api from './api';
+import { supabase } from './supabase';
 
 function App() {
   const location = useLocation();
-  const isAuthenticated = !!sessionStorage.getItem('access_token');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('access_token');
-    api.post('/api/token/logout/').catch(() => {});
+  // Track the Supabase session reactively instead of reading sessionStorage.
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setIsAuthenticated(!!data.session);
+      setAuthReady(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     window.location.href = '/';
   };
 
@@ -27,7 +48,7 @@ function App() {
           CAREER<span className="text-primary">SEA</span>
         </div>
         <div>
-          {isAuthenticated ? (
+          {authReady && isAuthenticated ? (
             <div className="flex gap-4 items-center">
               <a href="/dashboard" className="font-black uppercase text-sm tracking-widest hover:text-primary transition-colors">DASHBOARD</a>
               <button onClick={handleLogout} className="pop-button !px-4 !py-2 text-sm">LOGOUT</button>
@@ -54,7 +75,7 @@ function App() {
           </Routes>
         </AnimatePresence>
       </main>
-      
+
       <footer className="mt-20 py-8 border-t-pop border-text text-center font-bold uppercase text-xs tracking-widest opacity-60">
         &copy; {new Date().getFullYear()} CareerSea - All Rights Reserved
       </footer>

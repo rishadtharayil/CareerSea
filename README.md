@@ -15,7 +15,7 @@
   - **Wildcard:** Emerging, unconventional, future-oriented specialization.
 - **🗺️ Interactive Step Deep Dives:** On-demand generation of comprehensive study guides (Core Concepts, Weekly Milestones, Hands-on Mini Project, and Curated Resources).
 - **💬 Live AI Mentor Chat:** Context-aware, age-appropriate interactive mentor built directly into each roadmap step.
-- **🔐 Secure Authentication:** User accounts with Django-compatible PBKDF2-SHA256 password hashing and JWT access & refresh tokens.
+- **🔐 Secure Authentication:** Supabase Auth (email + password) with server-side password hashing, session refresh, and access tokens validated by the Worker.
 - **⚡ Edge-Native Architecture:** Sub-millisecond cold starts and global distribution powered by Cloudflare Workers and Cloudflare Pages.
 - **📱 Neubrutalist Design:** High-contrast, bold borders, and vibrant "pop" aesthetic, meticulously responsive across Mobile, Tablet, and Desktop.
 - **🛡️ Production Hardened:** 
@@ -39,7 +39,7 @@
 ### Backend (Edge Worker)
 - **Runtime:** Cloudflare Workers (V8 Isolate)
 - **Framework:** Hono (TypeScript)
-- **Auth:** PBKDF2-SHA256 (Django compatible) + HS256 JWT
+- **Auth:** Supabase Auth (email + password, server-side hashing)
 - **Database:** PostgreSQL (Managed by Supabase via PostgREST HTTPS Client)
 - **AI (Primary):** Google AI Studio — Gemini 3.1 Flash Lite (`gemini-3.1-flash-lite`)
 - **AI (Fallback):** OpenRouter API (`google/gemini-2.0-flash-001`)
@@ -64,7 +64,7 @@
 ├── worker/                   # TypeScript + Hono API (Cloudflare Worker)
 │   ├── src/
 │   │   ├── routes/           # Auth, Questions, Assessment, Steps, History
-│   │   ├── services/         # Supabase client, PBKDF2 auth, Gemini AI
+│   │   ├── services/         # Supabase client, auth verification, Gemini AI
 │   │   ├── types.ts          # Type definitions
 │   │   └── index.ts          # Central Hono application
 │   └── wrangler.jsonc        # Cloudflare Worker configuration
